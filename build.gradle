@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'src.Main'
+}
