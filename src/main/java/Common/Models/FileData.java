@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class FileData extends Message {
+public class FileData extends Message implements Serializable{
 
     private String filename;
     private long fileSize;

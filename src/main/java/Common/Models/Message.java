@@ -3,7 +3,7 @@ package Common.Models;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Message implements Serializable {
+public class Message {
     private String sender;
     private String receiver;
     private LocalDateTime timestamp;
