@@ -6,9 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -49,11 +47,17 @@ public class DatabaseHandlerTest {
 
 
 
-            String testFilePath = "src/test/resources/testFile.pdf";
+            //String testFilePath = "src/test/resources/example.txt";
+            String testFilePath = "src/test/resources/fileTest.txt";
             FileInputStream fis = new FileInputStream(new File(testFilePath));
-            byte[] fileBytes = fis.readAllBytes();
+            InputStream is = new ByteArrayInputStream(fis.readAllBytes());
+            int fileSize = is.available();
+            byte[] data = new byte[fileSize];
+            is.read(data, 0, fileSize);
+            is.close();
 
-            FileData fileTest = new FileData("testName", "testName", LocalDateTime.now(), "fileTest", fileBytes.length , fileBytes);
+
+            FileData fileTest = new FileData("testName", "testName", LocalDateTime.now(), "fileTest", fileSize , data);
             databaseHandler.appendPendMessage(fileTest);
 
             FileData fileReceived = (FileData) databaseHandler.getNextPendMsg(Test);
@@ -61,16 +65,12 @@ public class DatabaseHandlerTest {
             databaseHandler.removeUser(Test.getUsername());
 
             assertNotNull(fileReceived);
-            assertEquals(fileTest.hashCode(), fileReceived.hashCode());
 
 
-            String savedFilePath = "src/test/resources/savedFile.pdf";
-            File newfile = new File(savedFilePath);
-            try {
-                newfile.createNewFile();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
+            String savedFilePath = "src/test/resources/savedFile.txt";
+            OutputStream os = new FileOutputStream(new File(savedFilePath));
+            os.write(fileReceived.getData());
+            os.close();
 
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);

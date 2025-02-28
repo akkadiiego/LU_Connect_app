@@ -7,11 +7,11 @@ import java.util.Objects;
 public class FileData extends Message implements Serializable{
 
     private String filename;
-    private long fileSize;
+    private int fileSize;
     private byte[] data;
 
     // Constructor
-    public FileData(String sender, String receiver, LocalDateTime timestamp, String filename, long fileSize, byte[] data) {
+    public FileData(String sender, String receiver, LocalDateTime timestamp, String filename, int fileSize, byte[] data) {
         super(sender, receiver, timestamp);
         this.filename = filename;
         this.fileSize = fileSize;
@@ -24,7 +24,7 @@ public class FileData extends Message implements Serializable{
     public void setFilename(String filename) { this.filename = filename; }
 
     public long getFileSize() { return fileSize; }
-    public void setFileSize(long fileSize) { this.fileSize = fileSize; }
+    public void setFileSize(int fileSize) { this.fileSize = fileSize; }
 
     public byte[] getData() { return data; }
     public void setData(byte[] data) { this.data = data; }

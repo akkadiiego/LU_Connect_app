@@ -6,6 +6,9 @@ import Common.Models.textMessage;
 import Common.Models.User;
 import Server.Interfaces.IDatabaseHandler;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -79,8 +82,13 @@ public class DatabaseHandler implements IDatabaseHandler {
             }
             else if (result.getString("message_type").equals("FILE")) {
                 String filename = result.getString("filename");
-                long fileSize = result.getBytes("file_data").length;
-                byte[] data = result.getBytes("file_data");
+                byte[] b = result.getBytes("file_data");
+
+                InputStream is = new ByteArrayInputStream(b);
+                int fileSize = is.available();
+                byte[] data = new byte[fileSize];
+                is.read(data, 0, fileSize);
+                is.close();
 
                 return new FileData(sender, receiver, timestamp, filename, fileSize, data);
             }
@@ -90,6 +98,8 @@ public class DatabaseHandler implements IDatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
