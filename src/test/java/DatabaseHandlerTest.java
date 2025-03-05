@@ -7,8 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -30,7 +28,7 @@ public class DatabaseHandlerTest {
             User Test = new User( "testName" , "testPassword", true);
             databaseHandler.addUserData(Test);
             System.out.println(databaseHandler.getUsersData().toString());
-            assertTrue(databaseHandler.getUsersData().next());
+            assertFalse(databaseHandler.getUsersData().isEmpty());
 
             textMessage textTest = new textMessage("testName", "testName", "testMessage", LocalDateTime.now());
             databaseHandler.appendPendMessage(textTest);
@@ -47,8 +45,9 @@ public class DatabaseHandlerTest {
 
 
 
-            //String testFilePath = "src/test/resources/example.txt";
-            String testFilePath = "src/test/resources/fileTest.txt";
+            String testFilePath = "src/test/resources/example.txt";
+            //String testFilePath = "src/test/resources/fileTest.pdf";
+            //String testFilePath = "src/test/resources/example.jpg";
             FileInputStream fis = new FileInputStream(new File(testFilePath));
             InputStream is = new ByteArrayInputStream(fis.readAllBytes());
             int fileSize = is.available();
@@ -67,7 +66,10 @@ public class DatabaseHandlerTest {
             assertNotNull(fileReceived);
 
 
-            String savedFilePath = "src/test/resources/savedFile.txt";
+            String savedFilePath = "src/test/resources/savedExample.txt";
+            //String savedFilePath = "src/test/resources/savedFile.pdf";
+            //String savedFilePath = "src/test/resources/savedExample.jpg";
+
             OutputStream os = new FileOutputStream(new File(savedFilePath));
             os.write(fileReceived.getData());
             os.close();

@@ -9,7 +9,7 @@ public class User implements Serializable {
     private boolean isOnline;
 
     // Constructor
-    public User(String username, String password, boolean isOnline) {
+    public User(String username, String password, Boolean isOnline) {
         this.username = username;
         this.password = password;
         this.isOnline = isOnline;

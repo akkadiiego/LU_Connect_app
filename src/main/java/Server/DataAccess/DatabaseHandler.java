@@ -4,6 +4,7 @@ import Common.Models.FileData;
 import Common.Models.Message;
 import Common.Models.textMessage;
 import Common.Models.User;
+import Server.BusinessLogic.SecurityModule;
 import Server.Interfaces.IDatabaseHandler;
 
 import java.io.ByteArrayInputStream;
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 
 import static Common.Utils.Config.DB_PATH;
@@ -18,9 +21,11 @@ import static Common.Utils.Config.DB_PATH;
 public class DatabaseHandler implements IDatabaseHandler {
     private static DatabaseHandler instance;
     private static Connection conn;
+    private static SecurityModule securityModule;
 
     private DatabaseHandler() throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
+        securityModule = new SecurityModule();
     }
 
     public static synchronized DatabaseHandler getInstance() throws SQLException {
@@ -28,10 +33,31 @@ public class DatabaseHandler implements IDatabaseHandler {
         return new DatabaseHandler();}
         return instance;
     }
-    @Override
-    public ResultSet getUsersData() throws SQLException {
-        return conn.createStatement().executeQuery("SELECT * FROM users");
 
+    @Override
+    public HashSet<User> getUsersData() throws SQLException {
+        ResultSet result = conn.createStatement().executeQuery("SELECT * FROM users;");
+        ResultSetMetaData metaData = result.getMetaData();
+        int columnsNumber = metaData.getColumnCount();
+        HashSet<User> users = new HashSet<>();
+        boolean isOnline = false;
+
+
+        while (result.next()) {
+            int i = 1;
+            ArrayList<Object> arguments = new ArrayList<>();
+            while (i <= columnsNumber) {
+                System.out.println(result.getObject(i));
+                arguments.add(result.getObject(i));
+                i++;
+            }
+            String password = securityModule.decipherString((String) arguments.get(2));
+            if ((Integer) arguments.get(3) != 0) {
+                isOnline = true;
+            }
+            users.add(new User((String) arguments.get(1), password, isOnline));
+        }
+        return users;
     }
 
     @Override
@@ -142,6 +168,33 @@ public class DatabaseHandler implements IDatabaseHandler {
         }
     }
 
+    @Override
+    public boolean checkUserState(User user) throws SQLException {
+        HashSet<User> users = getUsersData();
+        for (User userReg : users){
+            if (userReg.getUsername().equals(user.getUsername())){
+                return userReg.isOnline();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void changeUserState(User user, boolean state) throws SQLException {
+
+        try {
+            String sql = "UPDATE users SET is_online = ? WHERE user_id = ?;";
+
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setBoolean(1, state);
+            preparedStatement.setInt(2, getUserid(user.getUsername()));
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private int getUserid(String username) throws SQLException {
         String sql = "SELECT user_id FROM users WHERE username = ?";
 
@@ -228,5 +281,10 @@ public class DatabaseHandler implements IDatabaseHandler {
     // to close connection
     public void close() throws SQLException {
         conn.close();
+    }
+
+    public static void main(String[] args) throws SQLException {
+        DatabaseHandler databaseHandler = DatabaseHandler.getInstance();
+        databaseHandler.getUsersData();
     }
 }
