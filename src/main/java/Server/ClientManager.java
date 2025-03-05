@@ -1,7 +1,8 @@
 package Server;
 
-import Client.Client;
+import Common.Models.Message;
 import Common.Models.User;
+import Common.Models.TextMessage;
 import Server.BusinessLogic.*;
 import Server.DataAccess.DatabaseHandler;
 
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ClientManager extends Thread{
     private Socket clientSocket;
     private Scanner in;
-    private PrintWriter out;
+    public PrintWriter out;
     private static DatabaseHandler databaseHandler;
     private AuthenticationService authenticationService;
     private MessageService messageService;
@@ -24,7 +26,8 @@ public class ClientManager extends Thread{
     private NotificationService notificationService;
     private SecurityModule securityModule;
     public static final Lock lock = new ReentrantLock();
-    public User user;
+    private User user;
+    private ClientManager targetClient;
 
     public ClientManager(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
@@ -36,45 +39,134 @@ public class ClientManager extends Thread{
     @Override
     public void run() {
         System.out.println("Conectado: " + Integer.parseInt(Thread.currentThread().getName().split("-")[3]));
-        try {
-            while (in.hasNextLine()) {
-                switch (in.nextLine()) {
-                    case "END":
-                        try {
-                            endClientConnection();
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                        break;
 
-                    case "PING":
-                        out.println("PONG");
-                        break;
-                    // TODO: Implement server functions here
+        while (in.hasNextLine()) {
+            switch (in.nextLine()) {
+                case "END":
+                    try {
+                        endClientConnection();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
 
-                    case "REGISTER":
-                        try {
-                            registerUser();
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                        break;
+                case "PING":
+                    out.println("PONG");
+                    break;
+                // TODO: Implement server functions here
 
-                    case "LOGIN":
-                        if (user != null) {
+                case "REGISTER":
+                    try {
+                        registerUser();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+
+                case "LOGIN":
+                    if (user != null) {
+                        break;
+                    }
+                    try {
+                        Login();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+
+                case "ENTER CHAT":
+                    out.println("estas aqui");
+                    if (this.user == null) {
+                        //out.println("You need to login first");
+                        break;
+                    }
+
+                    targetClient = null;
+                    if (in.hasNextLine()) {
+                        targetClient = Server.getClient(in.nextLine());
+                        if (targetClient == null) {
+                            out.println("User not found or not online.");
                             break;
                         }
-                        try {
-                            Login();
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
+                        //out.println("Chat entered: " + targetClient.user.getUsername());
+
+                        Thread messageReceiver = getThread();
+
+                        while (true) {
+                            if (in.hasNextLine()) {
+                                String input = in.nextLine();
+                                switch (input) {
+                                    case "SEND TEXT":
+                                        //out.println("send your text to " + targetClient.user.getUsername());
+                                        if (in.hasNextLine()) {
+                                            String messageContent = in.nextLine();
+                                            TextMessage newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
+
+                                            try {
+                                                lock.lock();
+                                                databaseHandler = DatabaseHandler.getInstance();
+                                                databaseHandler.appendPendMessage(newMessage);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            } finally {
+                                                try {
+                                                    databaseHandler.close();
+                                                } catch (SQLException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                                lock.unlock();
+                                            }
+                                        }
+                                        break;
+                                    case "EXIT CHAT":
+                                        messageReceiver.interrupt();
+                                        return;
+                                    default:
+                                        out.println("Invalid command.");
+                                        break;
+                                }
+                            }
                         }
-                        break;
+                    }
+                    break;
+            }
+        }
+    }
+
+    private Thread getThread() {
+        MessageService messageService = new MessageService(this, targetClient);
+
+        Thread messageReceiver = new Thread(() -> {
+            while (true) {
+                try {
+                    lock.lock();
+                    databaseHandler = DatabaseHandler.getInstance();
+
+                    Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
+                    if (message instanceof TextMessage) {
+                        messageService.receiveMessage((TextMessage) message);
+                        databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        databaseHandler.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    lock.unlock();
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
-        } catch (IllegalStateException ignore){
+        });
 
-        }
+        messageReceiver.start();
+        return messageReceiver;
     }
 
     private void registerUser() throws SQLException {
@@ -173,16 +265,19 @@ public class ClientManager extends Thread{
         securityModule = new SecurityModule();
 
         if (users == null || !authenticationService.authenticateUser(user, users)) {
-            out.println("This User does not exist!");
+            out.println("This User does not exist or is already connected!");
             user = null;
         }
         else {
             try {
                 lock.lock();
                 databaseHandler = DatabaseHandler.getInstance();
-                if (!databaseHandler.checkUserState(user)){
+                if (databaseHandler.checkUserState(user)){
+                    user = null;
+                }else{
                     databaseHandler.changeUserState( user, true);
                     user.setOnline(true);
+                    Server.registerClient(user.getUsername(), this);
                 }
 
             } catch (SQLException e) {
@@ -193,6 +288,17 @@ public class ClientManager extends Thread{
             }
 
             out.println("You just logged!");
+        }
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    static class MessageReceiver extends Thread{
+        @Override
+        public void run(){
+
         }
     }
 

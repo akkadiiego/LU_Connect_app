@@ -1,7 +1,9 @@
 package Server.Interfaces;
 
+import Common.Models.TextMessage;
+import Server.DataAccess.DatabaseHandler;
+
 public interface IMessageService {
 
-    void sendMessage();
-    void saveMessage();
+    void receiveMessage(TextMessage message);
 }

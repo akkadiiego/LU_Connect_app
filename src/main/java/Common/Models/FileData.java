@@ -11,7 +11,7 @@ public class FileData extends Message implements Serializable{
     private byte[] data;
 
     // Constructor
-    public FileData(String sender, String receiver, LocalDateTime timestamp, String filename, int fileSize, byte[] data) {
+    public FileData(User sender, User receiver, LocalDateTime timestamp, String filename, int fileSize, byte[] data) {
         super(sender, receiver, timestamp);
         this.filename = filename;
         this.fileSize = fileSize;

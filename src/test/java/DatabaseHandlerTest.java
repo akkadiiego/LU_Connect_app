@@ -1,5 +1,5 @@
 import Common.Models.FileData;
-import Common.Models.textMessage;
+import Common.Models.TextMessage;
 import Common.Models.User;
 import Server.DataAccess.DatabaseHandler;
 import org.junit.After;
@@ -30,11 +30,13 @@ public class DatabaseHandlerTest {
             System.out.println(databaseHandler.getUsersData().toString());
             assertFalse(databaseHandler.getUsersData().isEmpty());
 
-            textMessage textTest = new textMessage("testName", "testName", "testMessage", LocalDateTime.now());
+
+
+            TextMessage textTest = new TextMessage(Test, Test, "testMessage", LocalDateTime.now());
             databaseHandler.appendPendMessage(textTest);
             try {
-                assertNotNull(databaseHandler.getNextPendMsg(Test));
-                System.out.println(databaseHandler.getNextPendMsg(Test).toString());
+                assertNotNull(databaseHandler.getNextPendMsg(Test, Test));
+                System.out.println(databaseHandler.getNextPendMsg(Test, Test).toString());
             }catch (AssertionError e){
                 databaseHandler.removeAllTestMsg();
                 databaseHandler.removeUser(Test.getUsername());
@@ -56,10 +58,10 @@ public class DatabaseHandlerTest {
             is.close();
 
 
-            FileData fileTest = new FileData("testName", "testName", LocalDateTime.now(), "fileTest", fileSize , data);
+            FileData fileTest = new FileData(Test, Test, LocalDateTime.now(), "fileTest", fileSize , data);
             databaseHandler.appendPendMessage(fileTest);
 
-            FileData fileReceived = (FileData) databaseHandler.getNextPendMsg(Test);
+            FileData fileReceived = (FileData) databaseHandler.getNextPendMsg(Test, Test);
             databaseHandler.removeAllTestMsg();
             databaseHandler.removeUser(Test.getUsername());
 

@@ -24,10 +24,14 @@ public class Client {
             user = null;
 
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            while (reader.hasNextLine()){
-                writer.println(reader.nextLine());
+            new Thread(() -> {
+                while (in.hasNextLine()) {
+                    System.out.println(in.nextLine());
+                }
+            }).start();
 
-                System.out.println(in.nextLine());
+            while (reader.hasNextLine()) {
+                writer.println(reader.nextLine());
             }
         } catch (IOException e) {
             e.printStackTrace();

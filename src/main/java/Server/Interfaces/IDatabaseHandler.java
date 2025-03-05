@@ -13,8 +13,9 @@ public interface IDatabaseHandler {
     HashSet<User> getUsersData() throws SQLException ;
     void addUserData(User user) throws SQLException;
 
-    Object getNextPendMsg(User user) throws SQLException;
+    Object getNextPendMsg(User user, User sender) throws SQLException;
     void appendPendMessage(Object msg) throws SQLException;
+    int getNextMsgId(User user, User sender) throws SQLException;
 
     boolean checkUserState(User user) throws SQLException;
     void changeUserState(User user, boolean state) throws SQLException;

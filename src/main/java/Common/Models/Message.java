@@ -1,25 +1,24 @@
 package Common.Models;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class Message {
-    private String sender;
-    private String receiver;
+    private User sender;
+    private User receiver;
     private LocalDateTime timestamp;
 
-    public Message(String sender, String receiver, LocalDateTime timestamp) {
+    public Message(User sender, User receiver, LocalDateTime timestamp) {
         this.sender = sender;
         this.receiver = receiver;
         this.timestamp = timestamp;
     }
 
     // Getters and Setters
-    public String getSender() { return sender; }
-    public void setSender(String sender) { this.sender = sender; }
+    public User getSender() { return sender; }
+    public void setSender(User sender) { this.sender = sender; }
 
-    public String getReceiver() { return receiver; }
-    public void setReceiver(String receiver) { this.receiver = receiver; }
+    public User getReceiver() { return receiver; }
+    public void setReceiver(User receiver) { this.receiver = receiver; }
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
