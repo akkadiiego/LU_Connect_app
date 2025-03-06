@@ -7,18 +7,20 @@ import Server.Interfaces.IMessageService;
 public class MessageService implements IMessageService {
     private SecurityModule securityModule;
     private ClientManager myClient;
-    private ClientManager targetClient;
 
-    public MessageService(ClientManager myClient, ClientManager targetClient){
+    public MessageService(ClientManager myClient){
         this.myClient = myClient;
-        this.targetClient = targetClient;
+
         this.securityModule = new SecurityModule();
     }
 
     @Override
     public void receiveMessage(TextMessage message) {
-        message.setContent(securityModule.decipherString(message.getContent()));
-        myClient.out.println(message);
+        System.out.println(message.getContent());
+        String descifrado = securityModule.decipherString(message.getContent());
+        System.out.println(descifrado);
+        message.setContent(descifrado);
+        myClient.out.println(message.message_formated());
 
     }
 }

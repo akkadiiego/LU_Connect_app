@@ -1,5 +1,6 @@
 package Server;
 
+import Common.Models.FileData;
 import Common.Models.Message;
 import Common.Models.User;
 import Common.Models.TextMessage;
@@ -50,9 +51,9 @@ public class ClientManager extends Thread{
                     }
                     break;
 
-                case "PING":
+                /*case "PING":
                     out.println("PONG");
-                    break;
+                    break;*/
                 // TODO: Implement server functions here
 
                 case "REGISTER":
@@ -75,7 +76,6 @@ public class ClientManager extends Thread{
                     break;
 
                 case "ENTER CHAT":
-                    out.println("estas aqui");
                     if (this.user == null) {
                         //out.println("You need to login first");
                         break;
@@ -100,7 +100,38 @@ public class ClientManager extends Thread{
                                         //out.println("send your text to " + targetClient.user.getUsername());
                                         if (in.hasNextLine()) {
                                             String messageContent = in.nextLine();
-                                            TextMessage newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
+                                            TextMessage newMessage = null;
+                                            if (!messageContent.isEmpty()){
+                                                newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
+                                            }
+                                            try {
+                                                lock.lock();
+                                                databaseHandler = DatabaseHandler.getInstance();
+                                                databaseHandler.appendPendMessage(newMessage);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            } finally {
+                                                try {
+                                                    databaseHandler.close();
+                                                } catch (SQLException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                                lock.unlock();
+                                            }
+                                        }
+                                        break;
+                                    case "SEND FILE":
+                                        //out.println("send your text to " + targetClient.user.getUsername());
+                                        byte[] data = null;
+                                        String filename = null;
+                                        if (in.hasNext()) {
+                                            data = in.next().getBytes();
+                                        }
+                                        if (in.hasNextLine()) {
+                                            filename = in.nextLine();
+                                        }
+                                        if (!Objects.isNull(data) && !Objects.isNull(filename)){
+                                            FileData newMessage = new FileData(user, targetClient.user,LocalDateTime.now(), filename, data.length,  data);
 
                                             try {
                                                 lock.lock();
@@ -134,7 +165,8 @@ public class ClientManager extends Thread{
     }
 
     private Thread getThread() {
-        MessageService messageService = new MessageService(this, targetClient);
+        messageService = new MessageService(this);
+        fileService = new FileService(this);
 
         Thread messageReceiver = new Thread(() -> {
             while (true) {
@@ -143,8 +175,13 @@ public class ClientManager extends Thread{
                     databaseHandler = DatabaseHandler.getInstance();
 
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
+                    out.println(message.toString());
                     if (message instanceof TextMessage) {
                         messageService.receiveMessage((TextMessage) message);
+                        databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
+                    }
+                    else if (message instanceof FileData) {
+                        fileService.receiveMessage((FileData) message);
                         databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
                     }
 
@@ -295,12 +332,6 @@ public class ClientManager extends Thread{
         return user;
     }
 
-    static class MessageReceiver extends Thread{
-        @Override
-        public void run(){
-
-        }
-    }
 
     private void endClientConnection() throws SQLException {
         if (user != null){

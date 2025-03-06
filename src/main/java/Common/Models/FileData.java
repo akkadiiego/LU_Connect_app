@@ -6,9 +6,7 @@ import java.util.Objects;
 
 public class FileData extends Message implements Serializable{
 
-    private String filename;
-    private int fileSize;
-    private byte[] data;
+
 
     // Constructor
     public FileData(User sender, User receiver, LocalDateTime timestamp, String filename, int fileSize, byte[] data) {

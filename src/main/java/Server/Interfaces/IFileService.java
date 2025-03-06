@@ -1,7 +1,8 @@
 package Server.Interfaces;
 
+import Common.Models.FileData;
+
 public interface IFileService {
 
-    void sendFile();
-    void saveFile();
+    void receiveMessage(FileData message);
 }

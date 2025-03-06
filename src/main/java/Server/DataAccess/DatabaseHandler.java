@@ -103,6 +103,7 @@ public class DatabaseHandler implements IDatabaseHandler {
             if (result.getString("message_type").equals("TEXT")) {
 
                 return new TextMessage(sender, receiver, result.getString("content"), timestamp);
+
             } else if (result.getString("message_type").equals("FILE")) {
                 String filename = result.getString("filename");
                 byte[] b = result.getBytes("file_data");

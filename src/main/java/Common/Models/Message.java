@@ -6,8 +6,12 @@ public class Message {
     private User sender;
     private User receiver;
     private LocalDateTime timestamp;
+    protected String filename;
+    protected int fileSize;
+    protected byte[] data;
+    protected String content;
 
-    public Message(User sender, User receiver, LocalDateTime timestamp) {
+    public Message(User sender, User receiver,LocalDateTime timestamp) {
         this.sender = sender;
         this.receiver = receiver;
         this.timestamp = timestamp;
@@ -22,4 +26,7 @@ public class Message {
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { content = content; }
 }
