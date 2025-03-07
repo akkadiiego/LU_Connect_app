@@ -4,7 +4,7 @@ plugins {
 }
 
 application{
-    mainClass = 'main.java.main'
+    mainClass = 'main.Main'
 }
 
 repositories {

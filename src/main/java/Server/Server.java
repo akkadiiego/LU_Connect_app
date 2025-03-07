@@ -37,6 +37,7 @@ public class Server {
     public static ClientManager getClient(String username) {
         return clients.get(username);
     }
+    public static void removeClient(String username) {clients.remove(username);}
 
 
     public static void main(String[] args) {

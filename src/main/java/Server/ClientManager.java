@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,11 +48,9 @@ public class ClientManager extends Thread{
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+                    out.println("LOGGED OUT");
                     break;
 
-                /*case "PING":
-                    out.println("PONG");
-                    break;*/
                 // TODO: Implement server functions here
 
                 case "REGISTER":
@@ -75,7 +72,7 @@ public class ClientManager extends Thread{
                     }
                     break;
 
-                case "ENTER CHAT":
+                /*case "ENTER CHAT":
                     if (this.user == null) {
                         //out.println("You need to login first");
                         break;
@@ -159,7 +156,7 @@ public class ClientManager extends Thread{
                             }
                         }
                     }
-                    break;
+                    break;*/
             }
         }
     }
@@ -209,12 +206,9 @@ public class ClientManager extends Thread{
     private void registerUser() throws SQLException {
         ArrayList<String> arguments = new ArrayList<>();
 
-        out.println("Give me the username");
         if (in.hasNextLine()) {
             arguments.add(in.nextLine());
         }
-
-        out.println("Give me the password");
         if (in.hasNextLine()) {
             arguments.add(in.nextLine());
         }
@@ -259,23 +253,20 @@ public class ClientManager extends Thread{
                 lock.unlock();
             }
 
-            out.println("User registered successfully, now you can log in :)");
+            out.println("REGISTERED");
 
         }
         else {
-            out.println("User already exists");
+            out.println("NOT REGISTERED");
         }
     }
 
     public void Login() throws SQLException {
         ArrayList<String> arguments = new ArrayList<>();
 
-        out.println("Give me your username");
         if (in.hasNextLine()) {
             arguments.add(in.nextLine());
         }
-
-        out.println("Give me your password");
         if (in.hasNextLine()) {
             arguments.add(in.nextLine());
         }
@@ -302,7 +293,7 @@ public class ClientManager extends Thread{
         securityModule = new SecurityModule();
 
         if (users == null || !authenticationService.authenticateUser(user, users)) {
-            out.println("This User does not exist or is already connected!");
+            out.println("NOT LOGGED");
             user = null;
         }
         else {
@@ -324,7 +315,7 @@ public class ClientManager extends Thread{
                 lock.unlock();
             }
 
-            out.println("You just logged!");
+            out.println("LOGGED");
         }
     }
 
@@ -360,5 +351,6 @@ public class ClientManager extends Thread{
         }
         in.close();
         out.close();
+        Server.removeClient(user.getUsername());
     }
 }

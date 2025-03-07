@@ -1,7 +1,11 @@
 package Client;
 
+import Client.UI.LU_Connect_App;
 import Common.Models.User;
 import Server.Server;
+
+import javax.swing.*;
+
 import static Common.Utils.Config.SERVER_PORT;
 
 import java.io.DataOutputStream;
@@ -10,29 +14,20 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class Client {
+public class Client implements Runnable{
     private Socket socket;
-    private Scanner reader;
     private Scanner in;
+    private PrintWriter writer;
     private User user;
+    private LU_Connect_App luConnectUI;
 
     public Client(){
         try{
             socket = new Socket("localhost", SERVER_PORT);
-            reader = new Scanner(System.in);
             in = new Scanner(socket.getInputStream());
             user = null;
+            writer = new PrintWriter(socket.getOutputStream(), true);
 
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            new Thread(() -> {
-                while (in.hasNextLine()) {
-                    System.out.println(in.nextLine());
-                }
-            }).start();
-
-            while (reader.hasNextLine()) {
-                writer.println(reader.nextLine());
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,13 +36,74 @@ public class Client {
     public User getUser(){ return this.user; }
     public void setUser(User user) { this.user = user; }
 
+    public void setUI(LU_Connect_App luConnectUI) {
+        this.luConnectUI = luConnectUI;
+    }
+
     private void close() throws IOException {
         socket.close();
-        reader.close();
         in.close();
     }
 
-    public static void main(String[] args) {
-        new Client();
+    @Override
+    public void run() {
+        if (in.hasNextLine()) {
+            String serverMessage = in.nextLine();
+            if (serverMessage.equals("LOGGED")){
+                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("You logged successfully"));
+            } else if (serverMessage.equals("NOT LOGGED")) {
+                user = null;
+                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User does not exist or it is already online"));
+            } else if (serverMessage.equals("LOGGED OUT")){
+                user = null;
+            } else if (serverMessage.equals("REGISTERED")) {
+                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User Registered, now you can Log in"));
+            } else if (serverMessage.equals("NOT REGISTERED")) {
+                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User already exist"));
+            }
+            System.out.println("Server: " + serverMessage);
+
+
+            /*if (luConnectUI != null) {
+                SwingUtilities.invokeLater(() -> luConnectUI.updateText(serverMessage));
+            }*/
+        }
     }
+
+    public boolean sendLoginData(String username, char[] password){
+        if (writer != null) {
+            writer.println("LOGIN");
+            writer.println(username);
+            writer.println(new String(password));
+            writer.flush();
+
+            user = new User(username, new String(password), false);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean sendRegistrationData(String username, char[] password){
+        if (writer != null) {
+            writer.println("REGISTER");
+            writer.println(username);
+            writer.println(new String(password));
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean logOut() throws IOException {
+        if (writer != null) {
+            writer.println("END");
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
+    /*public static void main(String[] args) {
+        new Client();
+    }/+*/
 }
