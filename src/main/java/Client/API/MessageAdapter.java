@@ -1,6 +1,7 @@
 package Client.API;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MessageAdapter {
@@ -10,7 +11,7 @@ public class MessageAdapter {
         myMessage = message;
     }
 
-    public String formatMessage(){
+    public String formatMessage() {
         StringBuilder finalMessage = new StringBuilder();
         ArrayList<String> message = new ArrayList<>(List.of(myMessage.split(": ")));
 
@@ -19,17 +20,18 @@ public class MessageAdapter {
             content = message.get(1);
         }
 
-        message = (ArrayList<String>) List.of(message.get(0).split("/"));
+        message = new ArrayList<>(Arrays.asList(message.get(0).split("/")));
 
         String timestamp = message.get(0);
         if (message.size() > 1) {
-            message = (ArrayList<String>) List.of(message.get(1).split(" → "));
+            message = new ArrayList<>(Arrays.asList(message.get(1).split(" → ")));
         }
 
         String sender = message.getFirst();
         String receiver = message.getLast();
 
         finalMessage.append(sender).append(": ").append(content).append(" ");
-        return String.valueOf(finalMessage);
+        return finalMessage.toString();
     }
+
 }

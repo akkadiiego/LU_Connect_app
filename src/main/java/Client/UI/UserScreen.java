@@ -48,14 +48,16 @@ public class UserScreen extends JPanel {
     public void updateUserList(List<String> onlineUsers) {
         SwingUtilities.invokeLater(() -> {
             userPanel.removeAll();
-
-            for (String user : onlineUsers) {
-                JButton userButton = new JButton(user);
-                userButton.addActionListener(e -> {
-                    luConnect.getClient().startChatWith(user);
-                    luConnect.showScreen("ChatScreen");
-                });
-                userPanel.add(userButton);
+            if (onlineUsers != null) {
+                for (String user : onlineUsers) {
+                    JButton userButton = new JButton(user);
+                    userButton.addActionListener(e -> {
+                        luConnect.setTargetClient(user);
+                        luConnect.showScreen("ChatScreen");
+                        luConnect.getClient().startChatWith(user);
+                    });
+                    userPanel.add(userButton);
+                }
             }
 
             userPanel.revalidate();

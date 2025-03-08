@@ -93,6 +93,7 @@ public class ClientManager extends Thread {
                     targetClient = null;
                     if (in.hasNextLine()) {
                         targetClient = Server.getClient(in.nextLine());
+                        //out.println("en el chat de:" + targetClient);
                         if (targetClient == null) {
                             out.println("USER NOT FOUND");
                             break;
@@ -167,7 +168,6 @@ public class ClientManager extends Thread {
             }
             lock.unlock();
         }
-        return;
     }
 
     private Thread getThread() {
@@ -180,11 +180,12 @@ public class ClientManager extends Thread {
                     lock.lock();
                     databaseHandler = DatabaseHandler.getInstance();
 
+                    //out.println(targetClient.user);
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
-                    out.println("RECEIVED MESSAGE:" + message.toString());
                     if (message instanceof TextMessage) {
                         messageService.receiveMessage((TextMessage) message);
                         databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
+                        out.println("RECEIVED MESSAGE:" + (message));
                     }
                     else if (message instanceof FileData) {
                         fileService.receiveMessage((FileData) message);

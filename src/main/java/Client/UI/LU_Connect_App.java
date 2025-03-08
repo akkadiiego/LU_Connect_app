@@ -51,14 +51,16 @@ public class LU_Connect_App  extends JFrame{
                 myClient.startUpdatingOnlineClients();
                 ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherOnClients);
             });
+        } else if (screen.equals("ChatScreen")) {
+            SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).updateChatTitle(targetClient));
         }
     }
+
 
 
     public Client getClient() {return myClient;}
 
     public void setTargetClient(String targetClient) {this.targetClient = targetClient;}
-    public String getTargetClient() {return targetClient;}
 
     public void loginMessage(String serverMessage) {
         if (serverMessage.equals("You logged successfully")){

@@ -9,47 +9,67 @@ public class ChatScreen extends JPanel {
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
+    private JLabel title;
 
     public ChatScreen(LU_Connect_App luConnectApp) {
         setLayout(new BorderLayout());
 
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel leftTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel center = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        JLabel title = new JLabel("Chat with: " + luConnectApp.getTargetClient(), SwingConstants.CENTER);
+        title = new JLabel("Chat with: ", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 20));
-        add(title, BorderLayout.NORTH);
+        center.add(title);
+
+        JButton back = new JButton("Back");
+        leftTop.add(back);
+        topPanel.add(center, BorderLayout.CENTER);
+        topPanel.add(leftTop, BorderLayout.WEST);
 
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
-        add(chatScrollPane, BorderLayout.CENTER);
+
 
 
         JPanel floorPanel = new JPanel(new BorderLayout());
         messageField = new JTextField();
         sendButton = new JButton("Send");
-        JButton back = new JButton("Back");
 
 
-        sendButton.addActionListener(e -> sendMessage());
-        messageField.addActionListener(e -> sendMessage());
+
+
+        sendButton.addActionListener(e ->
+                {
+                    showSentMessage(messageField.getText());
+                    SwingUtilities.invokeLater(() -> luConnectApp.getClient().sendMessage(messageField.getText()));
+                    messageField.setText("");
+                }
+        );
+        messageField.addActionListener(e ->
+                {
+                    showSentMessage(messageField.getText());
+                    SwingUtilities.invokeLater(() -> luConnectApp.getClient().sendMessage(messageField.getText()));
+                    messageField.setText("");
+                }
+        );
 
         back.addActionListener(e -> luConnectApp.showScreen("UserScreen"));
 
         floorPanel.add(messageField, BorderLayout.CENTER);
         floorPanel.add(sendButton, BorderLayout.EAST);
 
+        add(topPanel, BorderLayout.NORTH);
+        add(chatScrollPane, BorderLayout.CENTER);
         add(floorPanel, BorderLayout.SOUTH);
     }
 
-
-    private void sendMessage() {
-        String message = messageField.getText().trim();
-        if (!message.isEmpty()) {
-            chatArea.append("You: " + message + "\n");
-            messageField.setText("");
-        }
+    public void updateChatTitle(String targetUser) {
+        SwingUtilities.invokeLater(() -> title.setText("Chat with: " + targetUser));
     }
+
 
     public void receiveMessage(String unformattedMessage) {
         if (unformattedMessage == null || unformattedMessage.trim().isEmpty()) {
@@ -65,5 +85,15 @@ public class ChatScreen extends JPanel {
 
         SwingUtilities.invokeLater(() -> chatArea.append(formattedMessage + "\n"));
     }
+
+    public void showSentMessage(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            System.out.println("Empty message not displayed!");
+            return;
+        }
+
+        SwingUtilities.invokeLater(() -> chatArea.append("You: " + message + "\n"));
+    }
+
 
 }

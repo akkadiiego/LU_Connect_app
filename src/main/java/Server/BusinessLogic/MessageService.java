@@ -1,5 +1,6 @@
 package Server.BusinessLogic;
 
+import Client.API.MessageAdapter;
 import Common.Models.TextMessage;
 import Server.ClientManager;
 import Server.Interfaces.IMessageService;
@@ -16,11 +17,8 @@ public class MessageService implements IMessageService {
 
     @Override
     public void receiveMessage(TextMessage message) {
-        System.out.println(message.getContent());
-        String descifrado = securityModule.decipherString(message.getContent());
-        System.out.println(descifrado);
-        message.setContent(descifrado);
-        myClient.out.println(message.message_formated());
+        String decipherString = securityModule.decipherString(message.getContent());
+        message.setContent(decipherString);
 
     }
 }
