@@ -1,11 +1,9 @@
 package Client.UI;
 
 import Client.Client;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserScreen extends JPanel {
@@ -15,14 +13,15 @@ public class UserScreen extends JPanel {
     public UserScreen(LU_Connect_App luConnectApp){
         luConnect = luConnectApp;
         setLayout(new BorderLayout());
+        setBackground(luConnectApp.BACKGROUND_COLOR);
 
         JLabel title = new JLabel("Users Online", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setForeground(luConnectApp.GREY);
 
         JButton logOut = new JButton("Log out");
-
-
-        logOut.addActionListener(e-> {
+        styleButton(logOut);
+        logOut.addActionListener(e -> {
             try {
                 luConnect.logOut();
             } catch (IOException i) {
@@ -30,19 +29,20 @@ public class UserScreen extends JPanel {
             }
         });
 
-        userPanel = new JPanel();
-        userPanel.setLayout(new GridLayout(3, 1));
+        userPanel = new JPanel(new GridLayout(3, 1));
+        userPanel.setBackground(luConnectApp.SECOND_BACK_COLOR);
 
-
-        JPanel floorPanel = new JPanel(new BorderLayout());
-        JPanel leftFloor = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        leftFloor.add(logOut);
-        floorPanel.add(leftFloor, BorderLayout.CENTER);
-
-
-        add(floorPanel, BorderLayout.SOUTH);
-        add(new JScrollPane(userPanel), BorderLayout.CENTER);
         add(title, BorderLayout.NORTH);
+        add(new JScrollPane(userPanel), BorderLayout.CENTER);
+        add(logOut, BorderLayout.SOUTH);
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(luConnect.RED);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     public void updateUserList(List<String> onlineUsers) {

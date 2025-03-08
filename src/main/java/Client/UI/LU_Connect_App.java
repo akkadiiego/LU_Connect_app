@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LU_Connect_App  extends JFrame{
+    public static final Color RED = new Color(153, 0, 0);
+    public static final Color BACKGROUND_COLOR = new Color(50, 50, 50);
+    public static final Color SECOND_BACK_COLOR = new Color(30, 30, 30);
+    public static final Color GREY = new Color(204, 204, 204);
     private CardLayout cardLayout;
     private JPanel cardPanel;
     private Client myClient;

@@ -1,7 +1,6 @@
 package Client.UI;
 
 import Client.API.AuthenticationManager;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,38 +8,31 @@ public class LoginScreen extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel messageLabel;
+    private LU_Connect_App luConnectApp;
 
-    public LoginScreen(LU_Connect_App luConnectApp){
+    public LoginScreen(LU_Connect_App luConnect){
+        luConnectApp = luConnect;
         setLayout(new BorderLayout());
+        setBackground(luConnectApp.BACKGROUND_COLOR);
 
         JLabel title = new JLabel("LOGIN", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setForeground(luConnectApp.RED);
 
         usernameField = new JTextField(15);
         passwordField = new JPasswordField(15);
-
-        JLabel usernameRules = new JLabel("<html><i>Username: 4-15 characters, only letters , numbers and _</i></html>");
-        JLabel passwordRules = new JLabel("<html><i>Password: 8-15 characters, 1 Uppercase, 1 number, 1 symbol</i></html>");
-
-        JButton send = new JButton("Send");
-
-        JLabel userLabel = new JLabel("Username: ");
-        JLabel passLabel = new JLabel("Password: ");
-
-        usernameField.setPreferredSize(new Dimension(200, 30));
-        userLabel.setPreferredSize(new Dimension(100, 30));
-        passwordField.setPreferredSize(new Dimension(200, 30));
-        passLabel.setPreferredSize(new Dimension(100, 30));
-
-
         usernameField.setFont(new Font("Arial", Font.PLAIN, 16));
         passwordField.setFont(new Font("Arial", Font.PLAIN, 16));
+        styleTextField(usernameField);
+        styleTextField(passwordField);
 
+        JButton send = new JButton("Login");
         JButton back = new JButton("Back");
-
+        styleButton(send);
+        styleButton(back);
 
         messageLabel = new JLabel(" ");
-        messageLabel.setForeground(Color.RED);
+        messageLabel.setForeground(luConnectApp.RED);
 
         back.addActionListener(e -> {
             luConnectApp.showScreen("HomeScreen");
@@ -50,58 +42,36 @@ public class LoginScreen extends JPanel {
         send.addActionListener(e -> {
             String username = usernameField.getText();
             char[] password = passwordField.getPassword();
-
             new AuthenticationManager(username, password);
-            if (!AuthenticationManager.isValidUsername()){
+            if (!AuthenticationManager.isValidUsername()) {
                 messageLabel.setText("Invalid Username.");
-
-
-            }
-            else if (!AuthenticationManager.isValidPassword()){
+            } else if (!AuthenticationManager.isValidPassword()) {
                 messageLabel.setText("Invalid password");
-            }
-            else {
+            } else {
                 luConnectApp.getClient().sendLoginData(username, password);
             }
         });
 
-
-        JPanel buttonsPanel = new JPanel(new BorderLayout());
-
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        leftPanel.add(back);
-
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        fieldsPanel.setBackground(luConnectApp.SECOND_BACK_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0; gbc.gridy = 0;
-        fieldsPanel.add(userLabel, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 0;
+        fieldsPanel.add(new JLabel("Username: "), gbc);
+        gbc.gridx = 1;
         fieldsPanel.add(usernameField, gbc);
-
         gbc.gridx = 0; gbc.gridy = 1;
-        fieldsPanel.add(passLabel, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 1;
+        fieldsPanel.add(new JLabel("Password: "), gbc);
+        gbc.gridx = 1;
         fieldsPanel.add(passwordField, gbc);
-
         gbc.gridx = 1; gbc.gridy = 2;
-        fieldsPanel.add(usernameRules, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 3;
-        fieldsPanel.add(passwordRules, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 4;
         fieldsPanel.add(messageLabel, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 5;
+        gbc.gridx = 1; gbc.gridy = 3;
         fieldsPanel.add(send, gbc);
 
-        buttonsPanel.add(leftPanel, BorderLayout.WEST);
-        buttonsPanel.add(rightPanel, BorderLayout.EAST);
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonsPanel.setBackground(luConnectApp.BACKGROUND_COLOR);
+        buttonsPanel.add(back);
 
         add(title, BorderLayout.NORTH);
         add(fieldsPanel, BorderLayout.CENTER);
@@ -112,5 +82,20 @@ public class LoginScreen extends JPanel {
         usernameField.setText("");
         passwordField.setText("");
         messageLabel.setText("");
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(luConnectApp.RED);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setBackground(luConnectApp.SECOND_BACK_COLOR);
+        field.setForeground(luConnectApp.GREY);
+        field.setCaretColor(luConnectApp.GREY);
+        field.setBorder(BorderFactory.createLineBorder(luConnectApp.GREY, 2));
     }
 }
