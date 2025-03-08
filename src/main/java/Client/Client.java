@@ -68,9 +68,11 @@ public class Client implements Runnable{
                         List<String> clients = List.of(items.get(1).split(","));
                         SwingUtilities.invokeLater(() -> luConnectUI.getOnlineClients(clients));
                     }
-
-
+                } else if (serverMessage.startsWith("RECEIVED MESSAGE:")) {
+                    String message = serverMessage.substring(17).trim();
+                    SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
                 }
+
                 System.out.println("Server: " + serverMessage);
             }
 
@@ -138,6 +140,16 @@ public class Client implements Runnable{
         if (writer != null) {
             writer.println("ENTER CHAT");
             writer.println(user);
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean sendMessage(String message){
+        if (writer != null) {
+            writer.println("SEND TEXT");
+            writer.println(message);
             writer.flush();
             return true;
         }

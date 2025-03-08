@@ -16,7 +16,7 @@ public class UserScreen extends JPanel {
         luConnect = luConnectApp;
         setLayout(new BorderLayout());
 
-        JLabel title = new JLabel("Users", SwingConstants.CENTER);
+        JLabel title = new JLabel("Users Online", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 20));
 
         JButton logOut = new JButton("Log out");
@@ -34,13 +34,13 @@ public class UserScreen extends JPanel {
         userPanel.setLayout(new GridLayout(3, 1));
 
 
-        JPanel panelFloor = new JPanel(new BorderLayout());
+        JPanel floorPanel = new JPanel(new BorderLayout());
         JPanel leftFloor = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftFloor.add(logOut);
-        panelFloor.add(leftFloor, BorderLayout.CENTER);
+        floorPanel.add(leftFloor, BorderLayout.CENTER);
 
 
-        add(panelFloor, BorderLayout.SOUTH);
+        add(floorPanel, BorderLayout.SOUTH);
         add(new JScrollPane(userPanel), BorderLayout.CENTER);
         add(title, BorderLayout.NORTH);
     }

@@ -36,7 +36,7 @@ public class LU_Connect_App  extends JFrame{
         cardPanel.add(new LoginScreen(this), "Login");
         cardPanel.add(new RegisterScreen(this), "Register");
         cardPanel.add(new UserScreen(this), "UserScreen");
-        cardPanel.add(new UserScreen(this), "ChatScreen");
+        cardPanel.add(new ChatScreen(this), "ChatScreen");
 
         add(cardPanel);
         setVisible(true);
@@ -57,6 +57,8 @@ public class LU_Connect_App  extends JFrame{
 
     public Client getClient() {return myClient;}
 
+    public void setTargetClient(String targetClient) {this.targetClient = targetClient;}
+    public String getTargetClient() {return targetClient;}
 
     public void loginMessage(String serverMessage) {
         if (serverMessage.equals("You logged successfully")){
@@ -64,7 +66,6 @@ public class LU_Connect_App  extends JFrame{
         }
 
         JOptionPane.showMessageDialog(null, serverMessage);
-
 
     }
 
@@ -80,6 +81,12 @@ public class LU_Connect_App  extends JFrame{
 
         if (currentScreen.equals("UserScreen")) {
             SwingUtilities.invokeLater(() -> ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherClients));
+        }
+    }
+
+    public void getMessage(String message){
+        if (currentScreen.equals("ChatScreen")) {
+            SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
         }
     }
 

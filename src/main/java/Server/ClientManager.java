@@ -149,27 +149,23 @@ public class ClientManager extends Thread {
     }
 
     private void sendMessage(String message) {
-        //out.println("send your text to " + targetClient.user.getUsername());
-        if (in.hasNextLine()) {
-            String messageContent = in.nextLine();
-            TextMessage newMessage = null;
-            if (!messageContent.isEmpty()){
-                newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
-            }
+        TextMessage newMessage = null;
+        if (!message.isEmpty()){
+            newMessage = new TextMessage(user, targetClient.user, message, LocalDateTime.now());
+        }
+        try {
+            lock.lock();
+            databaseHandler = DatabaseHandler.getInstance();
+            databaseHandler.appendPendMessage(newMessage);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
             try {
-                lock.lock();
-                databaseHandler = DatabaseHandler.getInstance();
-                databaseHandler.appendPendMessage(newMessage);
+                databaseHandler.close();
             } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    databaseHandler.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                lock.unlock();
+                throw new RuntimeException(e);
             }
+            lock.unlock();
         }
         return;
     }
@@ -185,7 +181,7 @@ public class ClientManager extends Thread {
                     databaseHandler = DatabaseHandler.getInstance();
 
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
-                    out.println(message.toString());
+                    out.println("RECEIVED MESSAGE:" + message.toString());
                     if (message instanceof TextMessage) {
                         messageService.receiveMessage((TextMessage) message);
                         databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
