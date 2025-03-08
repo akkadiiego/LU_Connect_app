@@ -92,7 +92,9 @@ public class ClientManager extends Thread {
 
                     targetClient = null;
                     if (in.hasNextLine()) {
+
                         targetClient = Server.getClient(in.nextLine());
+                        out.println(targetClient.user);
                         //out.println("en el chat de:" + targetClient);
                         if (targetClient == null) {
                             out.println("USER NOT FOUND");
@@ -138,9 +140,25 @@ public class ClientManager extends Thread {
                         }
                     }
                     break;*/
+
+                case "POP":
+
+                    try {
+                        lock.lock();
+                        databaseHandler = DatabaseHandler.getInstance();
+                        databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        try {
+                            databaseHandler.close();
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                        lock.unlock();
+                    }
                 case "EXIT CHAT":
                     messageReceiver.interrupt();
-                    out.println("EXIT CHAT");
                     break;
                 default:
                     out.println("Invalid command.");
@@ -180,12 +198,12 @@ public class ClientManager extends Thread {
                     lock.lock();
                     databaseHandler = DatabaseHandler.getInstance();
 
-                    //out.println(targetClient.user);
+                    out.println(targetClient.user);
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
                     if (message instanceof TextMessage) {
-                        messageService.receiveMessage((TextMessage) message);
-                        databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
                         out.println("RECEIVED MESSAGE:" + (message));
+                        messageService.receiveMessage((TextMessage) message);
+
                     }
                     else if (message instanceof FileData) {
                         fileService.receiveMessage((FileData) message);
@@ -202,7 +220,7 @@ public class ClientManager extends Thread {
                     }
                     lock.unlock();
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
                 }
@@ -281,7 +299,7 @@ public class ClientManager extends Thread {
             arguments.add(in.nextLine());
         }
 
-        user = new User(arguments.get(0), arguments.get(1), false);
+        User newUser = new User(arguments.get(0), arguments.get(1), false);
         HashSet<User> users = null;
 
         try {
@@ -302,8 +320,7 @@ public class ClientManager extends Thread {
         authenticationService = new AuthenticationService();
         securityModule = new SecurityModule();
 
-        if (users == null || !authenticationService.authenticateUser(user, users)) {
-            user = null;
+        if (users == null || !authenticationService.authenticateUser(newUser, users)) {
             out.println("NOT LOGGED");
 
         }
@@ -311,11 +328,13 @@ public class ClientManager extends Thread {
             try {
                 lock.lock();
                 databaseHandler = DatabaseHandler.getInstance();
-                if (databaseHandler.checkUserState(user)){
-                    user = null;
+                if (databaseHandler.checkUserState(newUser)){
+                    out.println("NOT LOGGED");
                 }else{
-                    databaseHandler.changeUserState( user, true);
+                    databaseHandler.changeUserState( newUser, true);
+                    user = newUser;
                     user.setOnline(true);
+
                     Server.registerClient(user.getUsername(), this);
 
                 }

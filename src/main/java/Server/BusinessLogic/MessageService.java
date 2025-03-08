@@ -18,6 +18,7 @@ public class MessageService implements IMessageService {
     @Override
     public void receiveMessage(TextMessage message) {
         String decipherString = securityModule.decipherString(message.getContent());
+        message.setReceiver(myClient.getUser());
         message.setContent(decipherString);
 
     }

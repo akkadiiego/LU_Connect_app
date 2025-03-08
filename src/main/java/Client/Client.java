@@ -1,5 +1,6 @@
 package Client;
 
+import Client.UI.ChatScreen;
 import Client.UI.LU_Connect_App;
 import Common.Models.User;
 
@@ -69,8 +70,12 @@ public class Client implements Runnable{
                         SwingUtilities.invokeLater(() -> luConnectUI.getOnlineClients(clients));
                     }
                 } else if (serverMessage.startsWith("RECEIVED MESSAGE:")) {
-                    String message = serverMessage.substring(17).trim();
-                    SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
+                    if (luConnectUI.currentScreen.equals("ChatScreen")) {
+                        String message = serverMessage.substring(17).trim();
+                        SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
+                        messageReceived();
+                    }
+
                 }
 
                 System.out.println("Server: " + serverMessage);
@@ -146,10 +151,28 @@ public class Client implements Runnable{
         return false;
     }
 
+    public boolean exitChat(){
+        if (writer != null) {
+            writer.println("EXIT CHAT");
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
     public boolean sendMessage(String message){
         if (writer != null) {
             writer.println("SEND TEXT");
             writer.println(message);
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean messageReceived(){
+        if (writer != null) {
+            writer.println("POP");
             writer.flush();
             return true;
         }

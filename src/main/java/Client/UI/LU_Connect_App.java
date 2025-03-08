@@ -15,7 +15,7 @@ public class LU_Connect_App  extends JFrame{
     private List<String> otherOnClients;
     private static final int initialScreenWidth = 600;
     private static final int initialScreenHeight = 400;
-    private String currentScreen;
+    public String currentScreen;
     private String targetClient;
 
     public LU_Connect_App(Client client){
@@ -87,9 +87,7 @@ public class LU_Connect_App  extends JFrame{
     }
 
     public void getMessage(String message){
-        if (currentScreen.equals("ChatScreen")) {
             SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
-        }
     }
 
 

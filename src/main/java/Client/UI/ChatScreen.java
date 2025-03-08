@@ -10,8 +10,10 @@ public class ChatScreen extends JPanel {
     private JTextField messageField;
     private JButton sendButton;
     private JLabel title;
+    private LU_Connect_App luConnect;
 
     public ChatScreen(LU_Connect_App luConnectApp) {
+        luConnect = luConnectApp;
         setLayout(new BorderLayout());
 
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -41,22 +43,13 @@ public class ChatScreen extends JPanel {
 
 
 
-        sendButton.addActionListener(e ->
-                {
-                    showSentMessage(messageField.getText());
-                    SwingUtilities.invokeLater(() -> luConnectApp.getClient().sendMessage(messageField.getText()));
-                    messageField.setText("");
-                }
-        );
-        messageField.addActionListener(e ->
-                {
-                    showSentMessage(messageField.getText());
-                    SwingUtilities.invokeLater(() -> luConnectApp.getClient().sendMessage(messageField.getText()));
-                    messageField.setText("");
-                }
-        );
+        sendButton.addActionListener(e -> sendChatMessage());
+        messageField.addActionListener(e -> sendChatMessage());
 
-        back.addActionListener(e -> luConnectApp.showScreen("UserScreen"));
+        back.addActionListener(e -> {
+            luConnectApp.showScreen("UserScreen");
+            SwingUtilities.invokeLater(() -> luConnectApp.getClient().exitChat());
+        });
 
         floorPanel.add(messageField, BorderLayout.CENTER);
         floorPanel.add(sendButton, BorderLayout.EAST);
@@ -84,6 +77,7 @@ public class ChatScreen extends JPanel {
         }
 
         SwingUtilities.invokeLater(() -> chatArea.append(formattedMessage + "\n"));
+
     }
 
     public void showSentMessage(String message) {
@@ -93,6 +87,17 @@ public class ChatScreen extends JPanel {
         }
 
         SwingUtilities.invokeLater(() -> chatArea.append("You: " + message + "\n"));
+
+
+    }
+
+    private void sendChatMessage() {
+        String message = messageField.getText().trim();
+        if (!message.isEmpty()) {
+            showSentMessage(message);
+            luConnect.getClient().sendMessage(message);
+            messageField.setText("");
+        }
     }
 
 
