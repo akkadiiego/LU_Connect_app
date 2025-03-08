@@ -95,9 +95,15 @@ public class LU_Connect_App  extends JFrame{
     }
 
 
-    public void logOut() throws IOException {
-        JOptionPane.showMessageDialog(null, "You logged out.");
-        myClient.logOut();
-        SwingUtilities.invokeLater(() -> System.exit(0));
+    public void logOut() {
+        try {
+            myClient.logOut();
+            SwingUtilities.invokeLater(() -> {
+                this.dispose();
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }

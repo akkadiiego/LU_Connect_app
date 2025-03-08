@@ -116,6 +116,8 @@ public class Client implements Runnable{
         if (writer != null) {
             writer.println("END");
             writer.flush();
+
+            socket.close();
             return true;
         }
         return false;

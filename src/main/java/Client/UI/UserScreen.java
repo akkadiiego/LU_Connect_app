@@ -22,11 +22,7 @@ public class UserScreen extends JPanel {
         JButton logOut = new JButton("Log out");
         styleButton(logOut);
         logOut.addActionListener(e -> {
-            try {
-                luConnect.logOut();
-            } catch (IOException i) {
-                throw new RuntimeException(i);
-            }
+            luConnect.logOut();
         });
 
         userPanel = new JPanel(new GridLayout(3, 1));
