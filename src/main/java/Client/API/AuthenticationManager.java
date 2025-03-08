@@ -1,9 +1,7 @@
 package Client.API;
 
 public class AuthenticationManager {
-    private static final int USER_MAX = 15;
-    private static final int PASSWORD_MAX = 15;
-    private static final String USERNAME_REGEX = "^[a-zA-Z][a-zA-Z0-9_]{0,14}$";
+    private static final String USERNAME_REGEX = "^[a-zA-Z][a-zA-Z0-9_]{3,14}$";
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{0,14}$";
     private static String myUsername;
     private static char[] myPassword;
@@ -14,17 +12,17 @@ public class AuthenticationManager {
     }
 
     public static boolean isValidUsername(){
-        if (myUsername.isEmpty()){
+        if (myUsername == null ||myUsername.isEmpty()){
             return false;
         }
         return myUsername.matches(USERNAME_REGEX);
     }
 
     public static boolean isValidPassword(){
-        if (myPassword.length == 0){
+        if (myPassword == null || myPassword.length == 0){
             return false;
         }
-        return (new String(myPassword)).matches(PASSWORD_REGEX) && myPassword.length <= PASSWORD_MAX;
+        return (new String(myPassword)).matches(PASSWORD_REGEX);
     }
 
 }

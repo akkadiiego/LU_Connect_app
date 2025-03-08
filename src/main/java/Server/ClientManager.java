@@ -11,11 +11,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ClientManager extends Thread{
+public class ClientManager extends Thread {
     private Socket clientSocket;
     private Scanner in;
     public PrintWriter out;
@@ -28,6 +29,7 @@ public class ClientManager extends Thread{
     public static final Lock lock = new ReentrantLock();
     private User user;
     private ClientManager targetClient;
+    private Thread messageReceiver;
 
     public ClientManager(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
@@ -72,93 +74,104 @@ public class ClientManager extends Thread{
                     }
                     break;
 
-                /*case "ENTER CHAT":
-                    if (this.user == null) {
-                        //out.println("You need to login first");
-                        break;
+                case "CLIENTS":
+                    StringBuilder onClients = new StringBuilder();
+                    for (String client : Server.getClients()) {
+                        if (client != null) {
+                            onClients.append(client).append(",");
+                        }
                     }
+                    if (onClients.length() > 2) {
+                        onClients.delete(onClients.length() - 1, onClients.length());
+                    }
+                    out.println("ONLINE CLIENTS:" + onClients);
+                    break;
+
+
+                case "ENTER CHAT":
 
                     targetClient = null;
                     if (in.hasNextLine()) {
                         targetClient = Server.getClient(in.nextLine());
                         if (targetClient == null) {
-                            out.println("User not found or not online.");
+                            out.println("USER NOT FOUND");
                             break;
                         }
-                        //out.println("Chat entered: " + targetClient.user.getUsername());
 
-                        Thread messageReceiver = getThread();
+                        messageReceiver = getThread();
+                    }
+                    break;
 
-                        while (true) {
-                            if (in.hasNextLine()) {
-                                String input = in.nextLine();
-                                switch (input) {
-                                    case "SEND TEXT":
-                                        //out.println("send your text to " + targetClient.user.getUsername());
-                                        if (in.hasNextLine()) {
-                                            String messageContent = in.nextLine();
-                                            TextMessage newMessage = null;
-                                            if (!messageContent.isEmpty()){
-                                                newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
-                                            }
-                                            try {
-                                                lock.lock();
-                                                databaseHandler = DatabaseHandler.getInstance();
-                                                databaseHandler.appendPendMessage(newMessage);
-                                            } catch (SQLException e) {
-                                                e.printStackTrace();
-                                            } finally {
-                                                try {
-                                                    databaseHandler.close();
-                                                } catch (SQLException e) {
-                                                    throw new RuntimeException(e);
-                                                }
-                                                lock.unlock();
-                                            }
-                                        }
-                                        break;
-                                    case "SEND FILE":
-                                        //out.println("send your text to " + targetClient.user.getUsername());
-                                        byte[] data = null;
-                                        String filename = null;
-                                        if (in.hasNext()) {
-                                            data = in.next().getBytes();
-                                        }
-                                        if (in.hasNextLine()) {
-                                            filename = in.nextLine();
-                                        }
-                                        if (!Objects.isNull(data) && !Objects.isNull(filename)){
-                                            FileData newMessage = new FileData(user, targetClient.user,LocalDateTime.now(), filename, data.length,  data);
+                case "SEND TEXT":
+                    if (in.hasNextLine()) {
+                        sendMessage(in.nextLine());
+                    }
+                    break;
 
-                                            try {
-                                                lock.lock();
-                                                databaseHandler = DatabaseHandler.getInstance();
-                                                databaseHandler.appendPendMessage(newMessage);
-                                            } catch (SQLException e) {
-                                                e.printStackTrace();
-                                            } finally {
-                                                try {
-                                                    databaseHandler.close();
-                                                } catch (SQLException e) {
-                                                    throw new RuntimeException(e);
-                                                }
-                                                lock.unlock();
-                                            }
-                                        }
-                                        break;
-                                    case "EXIT CHAT":
-                                        messageReceiver.interrupt();
-                                        return;
-                                    default:
-                                        out.println("Invalid command.");
-                                        break;
-                                }
+                /*case "SEND FILE":
+                    //out.println("send your text to " + targetClient.user.getUsername());
+                    byte[] data = null;
+                    String filename = null;
+                    if (in.hasNext()) {
+                        data = in.next().getBytes();
+                    }
+                    if (in.hasNextLine()) {
+                        filename = in.nextLine();
+                    }
+                    if (!Objects.isNull(data) && !Objects.isNull(filename)) {
+                        FileData newMessage = new FileData(user, targetClient.user, LocalDateTime.now(), filename, data.length, data);
+
+                        try {
+                            lock.lock();
+                            databaseHandler = DatabaseHandler.getInstance();
+                            databaseHandler.appendPendMessage(newMessage);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                databaseHandler.close();
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
                             }
+                            lock.unlock();
                         }
                     }
                     break;*/
+                case "EXIT CHAT":
+                    messageReceiver.interrupt();
+                    out.println("EXIT CHAT");
+                    break;
+                default:
+                    out.println("Invalid command.");
+                    break;
             }
         }
+    }
+
+    private void sendMessage(String message) {
+        //out.println("send your text to " + targetClient.user.getUsername());
+        if (in.hasNextLine()) {
+            String messageContent = in.nextLine();
+            TextMessage newMessage = null;
+            if (!messageContent.isEmpty()){
+                newMessage = new TextMessage(user, targetClient.user, messageContent, LocalDateTime.now());
+            }
+            try {
+                lock.lock();
+                databaseHandler = DatabaseHandler.getInstance();
+                databaseHandler.appendPendMessage(newMessage);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    databaseHandler.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                lock.unlock();
+            }
+        }
+        return;
     }
 
     private Thread getThread() {
@@ -293,8 +306,9 @@ public class ClientManager extends Thread{
         securityModule = new SecurityModule();
 
         if (users == null || !authenticationService.authenticateUser(user, users)) {
-            out.println("NOT LOGGED");
             user = null;
+            out.println("NOT LOGGED");
+
         }
         else {
             try {
@@ -306,6 +320,7 @@ public class ClientManager extends Thread{
                     databaseHandler.changeUserState( user, true);
                     user.setOnline(true);
                     Server.registerClient(user.getUsername(), this);
+
                 }
 
             } catch (SQLException e) {
@@ -314,8 +329,8 @@ public class ClientManager extends Thread{
                 databaseHandler.close();
                 lock.unlock();
             }
-
             out.println("LOGGED");
+
         }
     }
 

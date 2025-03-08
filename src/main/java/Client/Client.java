@@ -2,16 +2,16 @@ package Client;
 
 import Client.UI.LU_Connect_App;
 import Common.Models.User;
-import Server.Server;
 
 import javax.swing.*;
 
 import static Common.Utils.Config.SERVER_PORT;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client implements Runnable{
@@ -47,21 +47,32 @@ public class Client implements Runnable{
 
     @Override
     public void run() {
-        if (in.hasNextLine()) {
-            String serverMessage = in.nextLine();
-            if (serverMessage.equals("LOGGED")){
-                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("You logged successfully"));
-            } else if (serverMessage.equals("NOT LOGGED")) {
-                user = null;
-                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User does not exist or it is already online"));
-            } else if (serverMessage.equals("LOGGED OUT")){
-                user = null;
-            } else if (serverMessage.equals("REGISTERED")) {
-                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User Registered, now you can Log in"));
-            } else if (serverMessage.equals("NOT REGISTERED")) {
-                SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User already exist"));
+        while (true){
+            if (in.hasNextLine()) {
+                String serverMessage = in.nextLine();
+                if (serverMessage.equals("LOGGED")) {
+                    SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("You logged successfully"));
+                } else if (serverMessage.equals("NOT LOGGED")) {
+                    user = null;
+                    SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User does not exist or it is already online"));
+                } else if (serverMessage.equals("LOGGED OUT")) {
+                    user = null;
+                } else if (serverMessage.equals("REGISTERED")) {
+                    SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User Registered, now you can Log in"));
+                } else if (serverMessage.equals("NOT REGISTERED")) {
+                    SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User already exist"));
+                } else if (serverMessage.contains("ONLINE CLIENTS:")) {
+                    List<String> items = Arrays.asList(serverMessage.split(":"));
+
+                    if (items.size() > 1) {
+                        List<String> clients = List.of(items.get(1).split(","));
+                        SwingUtilities.invokeLater(() -> luConnectUI.getOnlineClients(clients));
+                    }
+
+
+                }
+                System.out.println("Server: " + serverMessage);
             }
-            System.out.println("Server: " + serverMessage);
 
 
             /*if (luConnectUI != null) {
@@ -102,6 +113,37 @@ public class Client implements Runnable{
         }
         return false;
     }
+
+    private void onlineClients() {
+        if (writer != null) {
+            writer.println("CLIENTS");
+            writer.flush();
+        }
+    }
+
+    public void startUpdatingOnlineClients() {
+        new Thread(() -> {
+            while (true) {
+                onlineClients();
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public boolean startChatWith(String user) {
+        if (writer != null) {
+            writer.println("ENTER CHAT");
+            writer.println(user);
+            writer.flush();
+            return true;
+        }
+        return false;
+    }
+
 
     /*public static void main(String[] args) {
         new Client();
