@@ -25,6 +25,9 @@ public class ChatScreen extends JPanel {
         JPanel leftTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftTop.setBackground(luConnectApp.BACKGROUND_COLOR);
 
+        JPanel rightTop = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightTop.setBackground(luConnectApp.BACKGROUND_COLOR);
+
         JPanel center = new JPanel(new FlowLayout(FlowLayout.CENTER));
         center.setBackground(luConnectApp.BACKGROUND_COLOR);
 
@@ -37,8 +40,18 @@ public class ChatScreen extends JPanel {
         styleButton(back);
         leftTop.add(back);
 
+        JButton notifications = new JButton("Notications: " + luConnect.currentState());
+        styleButton(notifications);
+        notifications.addActionListener(e -> {
+            luConnect.setNotificationState();
+            notifications.setText("Notications: " + luConnect.currentState());
+        });
+
+        rightTop.add(notifications);
+
         topPanel.add(center, BorderLayout.CENTER);
         topPanel.add(leftTop, BorderLayout.WEST);
+        topPanel.add(rightTop, BorderLayout.EAST);
 
         chatBox = Box.createVerticalBox();
         chatPanel = new JPanel();
@@ -73,6 +86,7 @@ public class ChatScreen extends JPanel {
         back.addActionListener(e -> {
             luConnectApp.showScreen("UserScreen");
             SwingUtilities.invokeLater(() -> luConnectApp.getClient().exitChat());
+            clearChat();
         });
 
         floorPanel.add(messageField, BorderLayout.CENTER);
@@ -156,4 +170,11 @@ public class ChatScreen extends JPanel {
         button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
+
+    public void clearChat() {
+        chatBox.removeAll();
+        chatPanel.revalidate();
+        chatPanel.repaint();
+    }
+
 }

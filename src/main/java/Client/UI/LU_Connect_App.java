@@ -2,11 +2,14 @@ package Client.UI;
 
 import Client.Client;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class LU_Connect_App  extends JFrame{
     public static final Color RED = new Color(153, 0, 0);
@@ -23,6 +26,7 @@ public class LU_Connect_App  extends JFrame{
     private String targetClient;
     private boolean notificationState;
     public ArrayList<String> newMessageUsers;
+    private int lastMessageReceived;
 
     public LU_Connect_App(Client client){
         myClient = client;
@@ -30,6 +34,7 @@ public class LU_Connect_App  extends JFrame{
         targetClient = null;
         notificationState = true;
         newMessageUsers = new ArrayList<>();
+        lastMessageReceived = 0;
 
         setTitle("LUConnect");
         setSize(initialScreenWidth, initialScreenHeight);
@@ -76,6 +81,10 @@ public class LU_Connect_App  extends JFrame{
 
     public boolean isNotificationState() {return notificationState;}
 
+    public int getLastMessageReceived() {return lastMessageReceived;}
+
+    public void setLastMessageReceived(int lastMessageReceived) {this.lastMessageReceived = lastMessageReceived;}
+
     public void loginMessage(String serverMessage) {
         if (serverMessage.equals("You logged successfully")){
             showScreen("UserScreen");
@@ -111,6 +120,26 @@ public class LU_Connect_App  extends JFrame{
         else if (currentScreen.equals("UserScreen")) {
             SwingUtilities.invokeLater(() -> ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherOnClients, newMessageUsers));
         }
+    }
+
+    public void playNotificationSound() {
+        if (!notificationState){
+            return;
+        }
+        try (AudioInputStream audio = AudioSystem.getAudioInputStream(getClass().getResource("/sounds/Notification.wav"))) {
+            Clip clip = AudioSystem.getClip();
+            clip.open(audio);
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    public String currentState(){
+        if (isNotificationState()) {
+            return "On";
+        }
+        return "Off";
     }
 
 

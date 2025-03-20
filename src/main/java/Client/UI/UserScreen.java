@@ -1,11 +1,10 @@
 package Client.UI;
 
-import Client.Client;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import javax.sound.sampled.*;
 
 public class UserScreen extends JPanel {
     LU_Connect_App luConnect;
@@ -22,11 +21,11 @@ public class UserScreen extends JPanel {
         title.setForeground(luConnectApp.GREY);
 
         title.setFont(new Font("Arial", Font.BOLD, 22));
-        JButton notifications = new JButton("Notications: " + currentState());
+        JButton notifications = new JButton("Notications: " + luConnectApp.currentState());
         styleButton(notifications);
         notifications.addActionListener(e -> {
             luConnect.setNotificationState();
-            notifications.setText("Notications: " + currentState());
+            notifications.setText("Notications: " + luConnectApp.currentState());
         });
 
 
@@ -56,35 +55,40 @@ public class UserScreen extends JPanel {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    public void updateUserList(List<String> onlineUsers, ArrayList<String> notifyUsers) {
+    private Icon createDotIcon(Color color) {
+        return new Icon() {
+            private final int SIZE = 8;
+            @Override public void paintIcon(Component c, Graphics g, int x, int y) {
+                g.setColor(color);
+                g.fillOval(x, y, SIZE, SIZE);
+            }
+            @Override public int getIconWidth() { return SIZE; }
+            @Override public int getIconHeight() { return SIZE; }
+        };
+    }
+
+    public void updateUserList(List<String> onlineUsers, List<String> notifyUsers) {
         SwingUtilities.invokeLater(() -> {
             userPanel.removeAll();
-            if (onlineUsers != null) {
-                for (String user : onlineUsers) {
-                    JButton userButton = new JButton(user);
-                    if (notifyUsers.contains(user)){
-                        userButton.setText(user + "(NEW MESSAGE)");
-                    }
-                    userButton.addActionListener(e -> {
-                        luConnect.setTargetClient(user);
-                        luConnect.showScreen("ChatScreen");
-                        luConnect.getClient().startChatWith(user);
-                        luConnect.newMessageUsers.remove(user);
-                    });
-                    userPanel.add(userButton);
+            Icon dot = createDotIcon(luConnect.RED);
+            for (String user : onlineUsers) {
+                JButton btn = new JButton(user);
+                btn.setHorizontalTextPosition(SwingConstants.LEFT);
+                btn.setIconTextGap(8);
+                if (notifyUsers.contains(user) && luConnect.isNotificationState()) {
+                    btn.setIcon(dot);
                 }
+                btn.addActionListener(e -> {
+                    luConnect.setTargetClient(user);
+                    luConnect.showScreen("ChatScreen");
+                    luConnect.getClient().startChatWith(user);
+                    luConnect.newMessageUsers.remove(user);
+                });
+                userPanel.add(btn);
             }
-
             userPanel.revalidate();
             userPanel.repaint();
         });
-    }
-
-    private String currentState(){
-        if (luConnect.isNotificationState()) {
-            return "On";
-        }
-        return "Off";
     }
 
 

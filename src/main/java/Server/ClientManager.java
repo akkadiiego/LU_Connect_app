@@ -177,6 +177,7 @@ public class ClientManager extends Thread {
             lock.lock();
             databaseHandler = DatabaseHandler.getInstance();
             databaseHandler.appendPendMessage(newMessage);
+            Server.getClient(targetClient.user.getUsername()).out.println("NOTIFY:" + user.getUsername());
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

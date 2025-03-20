@@ -11,6 +11,7 @@ import static Common.Utils.Config.SERVER_PORT;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -21,6 +22,7 @@ public class Client implements Runnable{
     private PrintWriter writer;
     private User user;
     private LU_Connect_App luConnectUI;
+
 
     public Client(){
         try{
@@ -73,15 +75,21 @@ public class Client implements Runnable{
                     String targetClient = luConnectUI.getTargetClient();
                     String message = serverMessage.substring(17).trim();
                     String sender = message.split("/")[1].split("->")[0].split(" ")[0];
+
+
                     if (luConnectUI.currentScreen.equals("ChatScreen") && sender.equals(targetClient)) {
 
                         SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
                         messageReceived();
-
-                    } else if (luConnectUI.currentScreen.equals("UserScreen")) {
-                        SwingUtilities.invokeLater(() -> luConnectUI.notifyUser(sender));
                     }
 
+                } else if (serverMessage.startsWith("NOTIFY:")) {
+                    String sender = serverMessage.substring(7).trim();
+                    SwingUtilities.invokeLater(() -> luConnectUI.playNotificationSound());
+                    if (luConnectUI.currentScreen.equals("UserScreen")) {
+                        SwingUtilities.invokeLater(() -> luConnectUI.notifyUser(sender));
+
+                    }
                 }
 
                 System.out.println("Server: " + serverMessage);
@@ -141,7 +149,7 @@ public class Client implements Runnable{
             while (true) {
                 onlineClients();
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
