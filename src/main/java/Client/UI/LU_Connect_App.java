@@ -21,11 +21,15 @@ public class LU_Connect_App  extends JFrame{
     private static final int initialScreenHeight = 400;
     public String currentScreen;
     private String targetClient;
+    private boolean notificationState;
+    public ArrayList<String> newMessageUsers;
 
     public LU_Connect_App(Client client){
         myClient = client;
         otherOnClients = null;
         targetClient = null;
+        notificationState = true;
+        newMessageUsers = new ArrayList<>();
 
         setTitle("LUConnect");
         setSize(initialScreenWidth, initialScreenHeight);
@@ -53,7 +57,7 @@ public class LU_Connect_App  extends JFrame{
         if (screen.equals("UserScreen")) {
             SwingUtilities.invokeLater(() -> {
                 myClient.startUpdatingOnlineClients();
-                ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherOnClients);
+                ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherOnClients, new ArrayList<String>());
             });
         } else if (screen.equals("ChatScreen")) {
             SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).updateChatTitle(targetClient));
@@ -65,6 +69,12 @@ public class LU_Connect_App  extends JFrame{
     public Client getClient() {return myClient;}
 
     public void setTargetClient(String targetClient) {this.targetClient = targetClient;}
+
+    public String getTargetClient() {return targetClient;}
+
+    public void setNotificationState() {this.notificationState = !isNotificationState();}
+
+    public boolean isNotificationState() {return notificationState;}
 
     public void loginMessage(String serverMessage) {
         if (serverMessage.equals("You logged successfully")){
@@ -86,12 +96,21 @@ public class LU_Connect_App  extends JFrame{
         otherOnClients = otherClients;
 
         if (currentScreen.equals("UserScreen")) {
-            SwingUtilities.invokeLater(() -> ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherClients));
+            SwingUtilities.invokeLater(() -> ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherClients, newMessageUsers));
         }
     }
 
     public void getMessage(String message){
-            SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
+        SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
+    }
+
+    public void notifyUser(String user){
+        if (!newMessageUsers.contains(user)){
+            newMessageUsers.add(user);
+        }
+        else if (currentScreen.equals("UserScreen")) {
+            SwingUtilities.invokeLater(() -> ((UserScreen) cardPanel.getComponent(3)).updateUserList(otherOnClients, newMessageUsers));
+        }
     }
 
 

@@ -47,9 +47,9 @@ public class DatabaseHandlerTest {
 
 
 
-            String testFilePath = "src/test/resources/example.txt";
+            //String testFilePath = "src/test/resources/example.txt";
             //String testFilePath = "src/test/resources/fileTest.pdf";
-            //String testFilePath = "src/test/resources/example.jpg";
+            String testFilePath = "src/test/resources/example.jpg";
             FileInputStream fis = new FileInputStream(new File(testFilePath));
             InputStream is = new ByteArrayInputStream(fis.readAllBytes());
             int fileSize = is.available();
@@ -68,9 +68,9 @@ public class DatabaseHandlerTest {
             assertNotNull(fileReceived);
 
 
-            String savedFilePath = "src/test/resources/savedExample.txt";
+            //String savedFilePath = "src/test/resources/savedExample.txt";
             //String savedFilePath = "src/test/resources/savedFile.pdf";
-            //String savedFilePath = "src/test/resources/savedExample.jpg";
+            String savedFilePath = "src/test/resources/savedExample.jpg";
 
             OutputStream os = new FileOutputStream(new File(savedFilePath));
             os.write(fileReceived.getData());

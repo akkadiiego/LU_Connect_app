@@ -4,7 +4,7 @@ plugins {
 }
 
 application{
-    mainClass = 'main.Main'
+    mainClass = 'Main'
 }
 
 repositories {

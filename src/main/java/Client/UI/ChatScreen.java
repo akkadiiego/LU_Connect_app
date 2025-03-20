@@ -78,7 +78,6 @@ public class ChatScreen extends JPanel {
         floorPanel.add(messageField, BorderLayout.CENTER);
         floorPanel.add(sendButton, BorderLayout.EAST);
 
-        // 🔹 ADD COMPONENTS TO PANEL
         add(topPanel, BorderLayout.NORTH);
         add(chatScrollPane, BorderLayout.CENTER);
         add(floorPanel, BorderLayout.SOUTH);

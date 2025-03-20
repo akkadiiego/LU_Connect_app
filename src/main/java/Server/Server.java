@@ -22,7 +22,6 @@ public class Server {
             while(true) {
                 ClientManager clientManager = new ClientManager(server.accept());
                 pool.execute(clientManager);
-
             }
         } catch (IOException e) {
             e.printStackTrace();

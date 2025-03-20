@@ -24,7 +24,7 @@ public class MessageAdapter {
 
         String timestamp = message.get(0);
         if (message.size() > 1) {
-            message = new ArrayList<>(Arrays.asList(message.get(1).split(" → ")));
+            message = new ArrayList<>(Arrays.asList(message.get(1).split(" -> ")));
         }
 
         String sender = message.getFirst();

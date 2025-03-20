@@ -70,10 +70,16 @@ public class Client implements Runnable{
                         SwingUtilities.invokeLater(() -> luConnectUI.getOnlineClients(clients));
                     }
                 } else if (serverMessage.startsWith("RECEIVED MESSAGE:")) {
-                    if (luConnectUI.currentScreen.equals("ChatScreen")) {
-                        String message = serverMessage.substring(17).trim();
+                    String targetClient = luConnectUI.getTargetClient();
+                    String message = serverMessage.substring(17).trim();
+                    String sender = message.split("/")[1].split("->")[0].split(" ")[0];
+                    if (luConnectUI.currentScreen.equals("ChatScreen") && sender.equals(targetClient)) {
+
                         SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
                         messageReceived();
+
+                    } else if (luConnectUI.currentScreen.equals("UserScreen")) {
+                        SwingUtilities.invokeLater(() -> luConnectUI.notifyUser(sender));
                     }
 
                 }

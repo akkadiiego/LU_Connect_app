@@ -15,7 +15,7 @@ public class TextMessage extends Message implements Serializable{
 
     @Override
     public String toString() {
-        return "[" + getTimestamp() + "]/" + getSender() + " → " + getReceiver() + ": " + content;
+        return "[" + getTimestamp() + "]/" + getSender() + " -> " + getReceiver() + ": " + content;
     }
 
     @Override

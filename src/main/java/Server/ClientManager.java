@@ -40,7 +40,7 @@ public class ClientManager extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Conectado: " + Integer.parseInt(Thread.currentThread().getName().split("-")[3]));
+        System.out.println("Connected: " + Integer.parseInt(Thread.currentThread().getName().split("-")[3]));
 
         while (in.hasNextLine()) {
             switch (in.nextLine()) {
@@ -51,9 +51,10 @@ public class ClientManager extends Thread {
                         throw new RuntimeException(e);
                     }
                     out.println("LOGGED OUT");
+                    if (Server.getClients().isEmpty()){
+                        System.exit(0);
+                    }
                     break;
-
-                // TODO: Implement server functions here
 
                 case "REGISTER":
                     try {
@@ -94,7 +95,7 @@ public class ClientManager extends Thread {
                     if (in.hasNextLine()) {
 
                         targetClient = Server.getClient(in.nextLine());
-                        out.println(targetClient.user);
+                        //out.println(targetClient.user);
                         //out.println("en el chat de:" + targetClient);
                         if (targetClient == null) {
                             out.println("USER NOT FOUND");
@@ -198,7 +199,7 @@ public class ClientManager extends Thread {
                     lock.lock();
                     databaseHandler = DatabaseHandler.getInstance();
 
-                    out.println(targetClient.user);
+                    //out.println(targetClient.user);
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
                     if (message instanceof TextMessage) {
                         out.println("RECEIVED MESSAGE:" + (message));
