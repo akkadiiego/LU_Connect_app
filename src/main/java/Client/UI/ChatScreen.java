@@ -94,7 +94,15 @@ public class ChatScreen extends JPanel {
             JFileChooser chooser = new JFileChooser();
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
-                luConnect.getClient().sendFile(file);
+                String[] parts = file.getName().split("\\.");
+                String extension = parts[parts.length - 1];
+
+                if (extension.equals("pdf") || extension.equals("jpeg") || extension.equals("jpg") || extension.equals("png") || extension.equals("docx")) {
+                    luConnect.getClient().sendFile(file);
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "Only pdf, docx, jpeg, jpg and png are allowed");
+                }
             }
         });
 
@@ -145,7 +153,7 @@ public class ChatScreen extends JPanel {
         JPanel messagePanel = new JPanel(new BorderLayout());
         messagePanel.setBackground(luConnect.SECOND_BACK_COLOR);
 
-        JButton downloadButton = new JButton("📎 " + filename);
+        JButton downloadButton = new JButton(filename);
         styleButton(downloadButton);
         downloadButton.setBackground(luConnect.GREY);
         downloadButton.setForeground(Color.BLACK);

@@ -52,16 +52,46 @@ public class LoginScreen extends JPanel {
             }
         });
 
+        usernameField.addActionListener(e -> {
+            String username = usernameField.getText();
+            char[] password = passwordField.getPassword();
+            new AuthenticationManager(username, password);
+            if (!AuthenticationManager.isValidUsername()) {
+                messageLabel.setText("Invalid Username.");
+            } else if (!AuthenticationManager.isValidPassword()) {
+                messageLabel.setText("Invalid password");
+            } else {
+                luConnectApp.getClient().sendLoginData(username, password);
+            }
+        });
+
+        passwordField.addActionListener(e -> {
+            String username = usernameField.getText();
+            char[] password = passwordField.getPassword();
+            new AuthenticationManager(username, password);
+            if (!AuthenticationManager.isValidUsername()) {
+                messageLabel.setText("Invalid Username.");
+            } else if (!AuthenticationManager.isValidPassword()) {
+                messageLabel.setText("Invalid password");
+            } else {
+                luConnectApp.getClient().sendLoginData(username, password);
+            }
+        });
+
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
         fieldsPanel.setBackground(luConnectApp.SECOND_BACK_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0; gbc.gridy = 0;
-        fieldsPanel.add(new JLabel("Username: "), gbc);
+        JLabel username = new JLabel("Username: ");
+        username.setForeground(luConnectApp.GREY);
+        fieldsPanel.add(username, gbc);
         gbc.gridx = 1;
         fieldsPanel.add(usernameField, gbc);
         gbc.gridx = 0; gbc.gridy = 1;
-        fieldsPanel.add(new JLabel("Password: "), gbc);
+        JLabel password = new JLabel("Password: ");
+        password.setForeground(luConnectApp.GREY);
+        fieldsPanel.add(password, gbc);
         gbc.gridx = 1;
         fieldsPanel.add(passwordField, gbc);
         gbc.gridx = 1; gbc.gridy = 2;
