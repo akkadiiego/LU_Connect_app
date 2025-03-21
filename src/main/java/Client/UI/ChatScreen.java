@@ -1,9 +1,14 @@
 package Client.UI;
 
 import Client.API.MessageAdapter;
+import Common.Models.FileData;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class ChatScreen extends JPanel {
     private JPanel chatPanel;
@@ -83,6 +88,16 @@ public class ChatScreen extends JPanel {
         sendButton.addActionListener(e -> sendChatMessage());
         messageField.addActionListener(e -> sendChatMessage());
 
+        JButton attachButton = new JButton("SEND FILE");
+        styleButton(attachButton);
+        attachButton.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                luConnect.getClient().sendFile(file);
+            }
+        });
+
         back.addActionListener(e -> {
             luConnectApp.showScreen("UserScreen");
             SwingUtilities.invokeLater(() -> luConnectApp.getClient().exitChat());
@@ -91,6 +106,8 @@ public class ChatScreen extends JPanel {
 
         floorPanel.add(messageField, BorderLayout.CENTER);
         floorPanel.add(sendButton, BorderLayout.EAST);
+        floorPanel.add(attachButton, BorderLayout.WEST);
+
 
         add(topPanel, BorderLayout.NORTH);
         add(chatScrollPane, BorderLayout.CENTER);
@@ -115,6 +132,53 @@ public class ChatScreen extends JPanel {
 
         SwingUtilities.invokeLater(() -> addMessageBubble(formattedMessage, false));
     }
+
+    public void receiveFile(String filename, byte[] data){
+        if (data == null || data.length == 0) {
+            System.out.println("Received an empty file.");
+            return;
+        }
+        addDownloadMessage(filename, data);
+    }
+
+    private void addDownloadMessage(String filename, byte[] data){
+        JPanel messagePanel = new JPanel(new BorderLayout());
+        messagePanel.setBackground(luConnect.SECOND_BACK_COLOR);
+
+        JButton downloadButton = new JButton("📎 " + filename);
+        styleButton(downloadButton);
+        downloadButton.setBackground(luConnect.GREY);
+        downloadButton.setForeground(Color.BLACK);
+
+        downloadButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setSelectedFile(new File(filename));
+            int choice = fileChooser.showSaveDialog(this);
+            if (choice == JFileChooser.APPROVE_OPTION) {
+                File selected = fileChooser.getSelectedFile();
+                try (FileOutputStream fos = new FileOutputStream(selected)) {
+                    fos.write(data);
+                    JOptionPane.showMessageDialog(this, "File perfectly saved");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Error: file not saved");
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        messagePanel.add(downloadButton, BorderLayout.WEST);
+
+        chatBox.add(messagePanel);
+        chatBox.add(Box.createVerticalStrut(10));
+
+        chatPanel.revalidate();
+        chatPanel.repaint();
+
+        SwingUtilities.invokeLater(() ->
+                chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum())
+        );
+    }
+
 
     public void showSentMessage(String message) {
         if (message == null || message.trim().isEmpty()) {

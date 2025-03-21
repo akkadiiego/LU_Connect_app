@@ -112,15 +112,14 @@ public class ClientManager extends Thread {
                     }
                     break;
 
-                /*case "SEND FILE":
-                    //out.println("send your text to " + targetClient.user.getUsername());
-                    byte[] data = null;
+                case "SEND FILE":
                     String filename = null;
-                    if (in.hasNext()) {
-                        data = in.next().getBytes();
-                    }
+                    byte[] data = null;
                     if (in.hasNextLine()) {
                         filename = in.nextLine();
+                    }
+                    if (in.hasNextLine()) {
+                        data = in.nextLine().getBytes();
                     }
                     if (!Objects.isNull(data) && !Objects.isNull(filename)) {
                         FileData newMessage = new FileData(user, targetClient.user, LocalDateTime.now(), filename, data.length, data);
@@ -129,6 +128,8 @@ public class ClientManager extends Thread {
                             lock.lock();
                             databaseHandler = DatabaseHandler.getInstance();
                             databaseHandler.appendPendMessage(newMessage);
+                            Server.getClient(targetClient.user.getUsername()).out.println("NOTIFY:" + user.getUsername());
+
                         } catch (SQLException e) {
                             e.printStackTrace();
                         } finally {
@@ -140,7 +141,7 @@ public class ClientManager extends Thread {
                             lock.unlock();
                         }
                     }
-                    break;*/
+                    break;
 
                 case "POP":
 
@@ -171,7 +172,8 @@ public class ClientManager extends Thread {
     private void sendMessage(String message) {
         TextMessage newMessage = null;
         if (!message.isEmpty()){
-            newMessage = new TextMessage(user, targetClient.user, message, LocalDateTime.now());
+
+            newMessage = new TextMessage(user, targetClient.user, securityModule.cipherString(message), LocalDateTime.now());
         }
         try {
             lock.lock();
@@ -203,13 +205,15 @@ public class ClientManager extends Thread {
                     //out.println(targetClient.user);
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
                     if (message instanceof TextMessage) {
-                        out.println("RECEIVED MESSAGE:" + (message));
-                        messageService.receiveMessage((TextMessage) message);
+                        TextMessage newMessage = messageService.receiveMessage((TextMessage) message);
+                        out.println("RECEIVED MESSAGE:" + (newMessage));
+
 
                     }
                     else if (message instanceof FileData) {
                         fileService.receiveMessage((FileData) message);
-                        databaseHandler.popPendMsg(databaseHandler.getNextMsgId(user, targetClient.user));
+                        out.println("RECEIVED FILE:" + (message));
+
                     }
 
                 } catch (SQLException e) {

@@ -2,6 +2,7 @@ package Common.Models;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class FileData extends Message implements Serializable{
@@ -30,7 +31,7 @@ public class FileData extends Message implements Serializable{
 
     @Override
     public String toString() {
-        return "Archivo: " + filename + " (" + fileSize + " bytes) enviado por " + getSender();
+        return getSender() + " -> " + filename  + " of " + fileSize + " bytes //// " + Arrays.toString(getData());
     }
 
     @Override

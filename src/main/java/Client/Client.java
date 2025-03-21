@@ -8,8 +8,7 @@ import javax.swing.*;
 
 import static Common.Utils.Config.SERVER_PORT;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -83,6 +82,22 @@ public class Client implements Runnable{
                         messageReceived();
                     }
 
+
+
+                } else if (serverMessage.startsWith("RECEIVED FILE:")) {
+                    String targetClient = luConnectUI.getTargetClient();
+                    String message = serverMessage.substring(14).trim();
+                    String sender = message.split(" -> ")[0];
+                    String filename = message.split(" -> ")[1].split(" of ")[0];
+                    byte[] data = message.split(" bytes //// ")[0].getBytes();
+
+
+
+                    if (luConnectUI.currentScreen.equals("ChatScreen") && sender.equals(targetClient)) {
+
+                        SwingUtilities.invokeLater(() -> luConnectUI.getFile(filename, data));
+                        messageReceived();
+                    }
                 } else if (serverMessage.startsWith("NOTIFY:")) {
                     String sender = serverMessage.substring(7).trim();
                     SwingUtilities.invokeLater(() -> luConnectUI.playNotificationSound());
@@ -185,6 +200,30 @@ public class Client implements Runnable{
         }
         return false;
     }
+    public boolean sendFile(File file) {
+        try {
+            writer.println("SEND FILE");
+
+
+
+            FileInputStream fis = new FileInputStream(file);
+            InputStream is = new ByteArrayInputStream(fis.readAllBytes());
+            int fileSize = is.available();
+            byte[] data = new byte[fileSize];
+            is.read(data, 0, fileSize);
+
+            writer.println(file.getName());
+            writer.println(Arrays.toString(data));
+            writer.flush();
+            is.close();
+            fis.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public boolean messageReceived(){
         if (writer != null) {

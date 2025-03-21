@@ -113,6 +113,10 @@ public class LU_Connect_App  extends JFrame{
         SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
     }
 
+    public void getFile(String filename, byte[] data){
+        SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveFile(filename, data));
+    }
+
     public void notifyUser(String user){
         if (!newMessageUsers.contains(user)){
             newMessageUsers.add(user);
