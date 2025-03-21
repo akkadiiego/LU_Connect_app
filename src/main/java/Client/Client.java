@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
 
@@ -87,9 +88,9 @@ public class Client implements Runnable{
                 } else if (serverMessage.startsWith("RECEIVED FILE:")) {
                     String targetClient = luConnectUI.getTargetClient();
                     String message = serverMessage.substring(14).trim();
-                    String sender = message.split(" -> ")[0];
+                    String sender = message.split(" -> ")[0].split(" ")[0];
                     String filename = message.split(" -> ")[1].split(" of ")[0];
-                    byte[] data = message.split(" bytes //// ")[0].getBytes();
+                    byte[] data = Base64.getDecoder().decode(serverMessage.split(" bytes //// ")[1].replaceAll("[^A-Za-z0-9+/=]", ""));
 
 
 
@@ -204,16 +205,15 @@ public class Client implements Runnable{
         try {
             writer.println("SEND FILE");
 
-
-
             FileInputStream fis = new FileInputStream(file);
             InputStream is = new ByteArrayInputStream(fis.readAllBytes());
             int fileSize = is.available();
             byte[] data = new byte[fileSize];
             is.read(data, 0, fileSize);
+            String encodedFile = Base64.getEncoder().encodeToString(data);
 
             writer.println(file.getName());
-            writer.println(Arrays.toString(data));
+            writer.println(encodedFile);
             writer.flush();
             is.close();
             fis.close();

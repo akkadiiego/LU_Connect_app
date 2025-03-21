@@ -114,13 +114,14 @@ public class ClientManager extends Thread {
 
                 case "SEND FILE":
                     String filename = null;
-                    byte[] data = null;
+                    String stringData = null;
                     if (in.hasNextLine()) {
                         filename = in.nextLine();
                     }
                     if (in.hasNextLine()) {
-                        data = in.nextLine().getBytes();
+                        stringData = in.nextLine().replaceAll("[^A-Za-z0-9+/=]", "");
                     }
+                    byte [] data = Base64.getDecoder().decode(stringData);
                     if (!Objects.isNull(data) && !Objects.isNull(filename)) {
                         FileData newMessage = new FileData(user, targetClient.user, LocalDateTime.now(), filename, data.length, data);
 
@@ -159,6 +160,7 @@ public class ClientManager extends Thread {
                         }
                         lock.unlock();
                     }
+                    break;
                 case "EXIT CHAT":
                     messageReceiver.interrupt();
                     break;
@@ -211,8 +213,8 @@ public class ClientManager extends Thread {
 
                     }
                     else if (message instanceof FileData) {
-                        fileService.receiveMessage((FileData) message);
-                        out.println("RECEIVED FILE:" + (message));
+                        FileData newFile = (FileData) message;
+                        out.println("RECEIVED FILE:" + newFile);
 
                     }
 

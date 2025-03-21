@@ -3,6 +3,7 @@ package Common.Models;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Objects;
 
 public class FileData extends Message implements Serializable{
@@ -31,7 +32,7 @@ public class FileData extends Message implements Serializable{
 
     @Override
     public String toString() {
-        return getSender() + " -> " + filename  + " of " + fileSize + " bytes //// " + Arrays.toString(getData());
+        return getSender() + " -> " + filename  + " of " + fileSize + " bytes //// " + Base64.getEncoder().encodeToString(getData()).replaceAll("[^A-Za-z0-9+/=]", "");
     }
 
     @Override

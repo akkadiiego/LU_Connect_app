@@ -18,9 +18,8 @@ public class FileService implements IFileService {
     }
 
     @Override
-    public void receiveMessage(FileData message) {
-        message.setData(securityModule.decipherString(Arrays.toString(message.getData())).getBytes());
-        myClient.out.println(message);
-
+    public FileData receiveMessage(FileData message) {
+        byte[] decryptedData = securityModule.decipherString(Arrays.toString(message.getData())).getBytes();
+        return new FileData(message.getSender(), message.getReceiver(), message.getTimestamp(), message.getFilename(), decryptedData.length, decryptedData);
     }
 }
