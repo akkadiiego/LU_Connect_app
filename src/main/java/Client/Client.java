@@ -17,19 +17,18 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Client implements Runnable{
-    private Socket socket;
-    private Scanner in;
-    private PrintWriter writer;
-    private User user;
-    private LU_Connect_App luConnectUI;
-
+    private Socket socket; // client socket
+    private Scanner in; // to read data from server
+    private PrintWriter writer; // to send data to server
+    private User user; // current user
+    private LU_Connect_App luConnectUI; // reference to UI
 
     public Client(){
         try{
-            socket = new Socket("localhost", SERVER_PORT);
-            in = new Scanner(socket.getInputStream());
+            socket = new Socket("localhost", SERVER_PORT); // connect to server
+            in = new Scanner(socket.getInputStream()); // read from server
             user = null;
-            writer = new PrintWriter(socket.getOutputStream(), true);
+            writer = new PrintWriter(socket.getOutputStream(), true); // write to server
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,7 +51,8 @@ public class Client implements Runnable{
     public void run() {
         while (true){
             if (in.hasNextLine()) {
-                String serverMessage = in.nextLine();
+                String serverMessage = in.nextLine(); // get server response
+
                 if (serverMessage.equals("LOGGED")) {
                     SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("You logged successfully"));
                 } else if (serverMessage.equals("NOT LOGGED")) {
@@ -66,7 +66,6 @@ public class Client implements Runnable{
                     SwingUtilities.invokeLater(() -> luConnectUI.loginMessage("User already exist"));
                 } else if (serverMessage.contains("ONLINE CLIENTS:")) {
                     List<String> items = Arrays.asList(serverMessage.split(":"));
-
                     if (items.size() > 1) {
                         List<String> clients = List.of(items.get(1).split(","));
                         SwingUtilities.invokeLater(() -> luConnectUI.getOnlineClients(clients));
@@ -76,26 +75,20 @@ public class Client implements Runnable{
                     String message = serverMessage.substring(17).trim();
                     String sender = message.split("/")[1].split("->")[0].split(" ")[0];
 
-
+                    // only show message if chat is open with that user
                     if (luConnectUI.currentScreen.equals("ChatScreen") && sender.equals(targetClient)) {
-
                         SwingUtilities.invokeLater(() -> luConnectUI.getMessage(message));
                         messageReceived();
                     }
-
-
 
                 } else if (serverMessage.startsWith("RECEIVED FILE:")) {
                     String targetClient = luConnectUI.getTargetClient();
                     String message = serverMessage.substring(14).trim();
                     String sender = message.split(" -> ")[0].split(" ")[0];
                     String filename = message.split(" -> ")[1].split(" of ")[0];
-                    byte[] data = Base64.getDecoder().decode(serverMessage.split(" bytes //// ")[1].replaceAll("[^A-Za-z0-9+/=]", ""));
-
-
+                    byte[] data = Base64.getDecoder().decode(serverMessage.split(" bytes //// ")[1].replaceAll("[^A-Za-z0-9+/=]", ""));  https://stackoverflow.com/questions/8571501/how-to-check-whether-a-string-is-base64-encoded-or-not
 
                     if (luConnectUI.currentScreen.equals("ChatScreen") && sender.equals(targetClient)) {
-
                         SwingUtilities.invokeLater(() -> luConnectUI.getFile(filename, data));
                         messageReceived();
                     }
@@ -104,17 +97,11 @@ public class Client implements Runnable{
                     SwingUtilities.invokeLater(() -> luConnectUI.playNotificationSound());
                     if (luConnectUI.currentScreen.equals("UserScreen")) {
                         SwingUtilities.invokeLater(() -> luConnectUI.notifyUser(sender));
-
                     }
                 }
 
                 System.out.println("Server: " + serverMessage);
             }
-
-
-            /*if (luConnectUI != null) {
-                SwingUtilities.invokeLater(() -> luConnectUI.updateText(serverMessage));
-            }*/
         }
     }
 
@@ -153,14 +140,14 @@ public class Client implements Runnable{
         return false;
     }
 
-    private void onlineClients() {
+    private void onlineClients() { // request list of online users
         if (writer != null) {
             writer.println("CLIENTS");
             writer.flush();
         }
     }
 
-    public void startUpdatingOnlineClients() {
+    public void startUpdatingOnlineClients() { // continuously update list
         new Thread(() -> {
             while (true) {
                 onlineClients();
@@ -192,7 +179,7 @@ public class Client implements Runnable{
         return false;
     }
 
-    public boolean sendMessage(String message){
+    public boolean sendMessage(String message){ // send a text message
         if (writer != null) {
             writer.println("SEND TEXT");
             writer.println(message);
@@ -201,7 +188,8 @@ public class Client implements Runnable{
         }
         return false;
     }
-    public boolean sendFile(File file) {
+
+    public boolean sendFile(File file) { // send a file to server
         try {
             writer.println("SEND FILE");
 
@@ -224,8 +212,7 @@ public class Client implements Runnable{
         }
     }
 
-
-    public boolean messageReceived(){
+    public boolean messageReceived(){ // notify server message was received
         if (writer != null) {
             writer.println("POP");
             writer.flush();
@@ -233,9 +220,4 @@ public class Client implements Runnable{
         }
         return false;
     }
-
-
-    /*public static void main(String[] args) {
-        new Client();
-    }/+*/
 }

@@ -10,6 +10,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 
+// I took some inspiration from this : https://stackoverflow.com/questions/15554296/initial-bytes-incorrect-after-java-aes-cbc-decryption
+
 public class SecurityModule implements ISecurityModule {
     private static final String KEY = "lu_connect";
 

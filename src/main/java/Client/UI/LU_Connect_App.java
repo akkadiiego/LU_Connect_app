@@ -11,22 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/*In order to create an Interface a follow a course of swing, since is very simple and is among the java standard libraries
+    here is the free course that I used to learn the basics --> https://www.youtube.com/playlist?list=PLAzlSdU-KYwWtfcYGSWCKD9Hf1nuhBdrQ*/
+
 public class LU_Connect_App  extends JFrame{
-    public static final Color RED = new Color(153, 0, 0);
-    public static final Color BACKGROUND_COLOR = new Color(50, 50, 50);
-    public static final Color SECOND_BACK_COLOR = new Color(30, 30, 30);
-    public static final Color GREY = new Color(204, 204, 204);
-    private CardLayout cardLayout;
-    private JPanel cardPanel;
-    private Client myClient;
-    private List<String> otherOnClients;
+    public static final Color RED = new Color(153, 0, 0); // main red color used
+    public static final Color BACKGROUND_COLOR = new Color(50, 50, 50); // background color
+    public static final Color SECOND_BACK_COLOR = new Color(30, 30, 30); // darker background
+    public static final Color GREY = new Color(204, 204, 204); // light grey text
+    private CardLayout cardLayout; // layout to switch between screens
+    private JPanel cardPanel; // panel that contains all screens
+    private Client myClient; // client object handling connection
+    private List<String> otherOnClients; // list of other online clients
     private static final int initialScreenWidth = 600;
     private static final int initialScreenHeight = 400;
-    public String currentScreen;
-    private String targetClient;
-    private boolean notificationState;
-    public ArrayList<String> newMessageUsers;
-    private int lastMessageReceived;
+    public String currentScreen; // name of the current screen
+    private String targetClient; // the user we are currently chatting with
+    private boolean notificationState; // true if notification sound is on
+    public ArrayList<String> newMessageUsers; // list of users that sent new messages
+    private int lastMessageReceived; // id of the last message received
 
     public LU_Connect_App(Client client){
         myClient = client;
@@ -55,7 +58,7 @@ public class LU_Connect_App  extends JFrame{
         setVisible(true);
     }
 
-    public void showScreen(String screen){
+    public void showScreen(String screen){ // switch to another screen
         cardLayout.show(cardPanel, screen);
         currentScreen = screen;
 
@@ -69,32 +72,29 @@ public class LU_Connect_App  extends JFrame{
         }
     }
 
+    public Client getClient() {return myClient;} // return the client object
 
+    public void setTargetClient(String targetClient) {this.targetClient = targetClient;} // set current chat target
 
-    public Client getClient() {return myClient;}
+    public String getTargetClient() {return targetClient;} // get current chat target
 
-    public void setTargetClient(String targetClient) {this.targetClient = targetClient;}
+    public void setNotificationState() {this.notificationState = !isNotificationState();} // toggle notifications
 
-    public String getTargetClient() {return targetClient;}
+    public boolean isNotificationState() {return notificationState;} // get notification state
 
-    public void setNotificationState() {this.notificationState = !isNotificationState();}
+    public int getLastMessageReceived() {return lastMessageReceived;} // get last message id
 
-    public boolean isNotificationState() {return notificationState;}
+    public void setLastMessageReceived(int lastMessageReceived) {this.lastMessageReceived = lastMessageReceived;} // set last message id
 
-    public int getLastMessageReceived() {return lastMessageReceived;}
-
-    public void setLastMessageReceived(int lastMessageReceived) {this.lastMessageReceived = lastMessageReceived;}
-
-    public void loginMessage(String serverMessage) {
+    public void loginMessage(String serverMessage) { // show login message
         if (serverMessage.equals("You logged successfully")){
             showScreen("UserScreen");
         }
 
         JOptionPane.showMessageDialog(null, serverMessage);
-
     }
 
-    public void getOnlineClients(List<String> clients){
+    public void getOnlineClients(List<String> clients){ // update online clients list
         List<String> otherClients = new ArrayList<>();
 
         for (String client : clients) {
@@ -109,15 +109,15 @@ public class LU_Connect_App  extends JFrame{
         }
     }
 
-    public void getMessage(String message){
+    public void getMessage(String message){ // pass received message to ChatScreen
         SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveMessage(message));
     }
 
-    public void getFile(String filename, byte[] data){
+    public void getFile(String filename, byte[] data){ // pass received file to ChatScreen
         SwingUtilities.invokeLater(() -> ((ChatScreen) cardPanel.getComponent(4)).receiveFile(filename, data));
     }
 
-    public void notifyUser(String user){
+    public void notifyUser(String user){ // add user to new message list
         if (!newMessageUsers.contains(user)){
             newMessageUsers.add(user);
         }
@@ -126,7 +126,7 @@ public class LU_Connect_App  extends JFrame{
         }
     }
 
-    public void playNotificationSound() {
+    public void playNotificationSound() { // play sound if enabled
         if (!notificationState){
             return;
         }
@@ -139,15 +139,14 @@ public class LU_Connect_App  extends JFrame{
         }
     }
 
-    public String currentState(){
+    public String currentState(){ // return text for current notification state
         if (isNotificationState()) {
             return "On";
         }
         return "Off";
     }
 
-
-    public void logOut() {
+    public void logOut() { // log out and close window
         try {
             myClient.logOut();
             SwingUtilities.invokeLater(() -> {

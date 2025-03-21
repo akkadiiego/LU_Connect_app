@@ -15,28 +15,28 @@ public class LoginScreen extends JPanel {
         setLayout(new BorderLayout());
         setBackground(luConnectApp.BACKGROUND_COLOR);
 
-        JLabel title = new JLabel("LOGIN", SwingConstants.CENTER);
+        JLabel title = new JLabel("LOGIN", SwingConstants.CENTER); // screen title
         title.setFont(new Font("Arial", Font.BOLD, 22));
         title.setForeground(luConnectApp.RED);
 
-        usernameField = new JTextField(15);
-        passwordField = new JPasswordField(15);
+        usernameField = new JTextField(15); // input for username
+        passwordField = new JPasswordField(15); // input for password
         usernameField.setFont(new Font("Arial", Font.PLAIN, 16));
         passwordField.setFont(new Font("Arial", Font.PLAIN, 16));
         styleTextField(usernameField);
         styleTextField(passwordField);
 
-        JButton send = new JButton("Login");
-        JButton back = new JButton("Back");
+        JButton send = new JButton("Login"); // login button
+        JButton back = new JButton("Back"); // back button
         styleButton(send);
         styleButton(back);
 
-        messageLabel = new JLabel(" ");
+        messageLabel = new JLabel(" "); // label to show error messages
         messageLabel.setForeground(luConnectApp.RED);
 
         back.addActionListener(e -> {
-            luConnectApp.showScreen("HomeScreen");
-            clearFields();
+            luConnectApp.showScreen("HomeScreen"); // return to home screen
+            clearFields(); // reset fields
         });
 
         send.addActionListener(e -> {
@@ -48,7 +48,7 @@ public class LoginScreen extends JPanel {
             } else if (!AuthenticationManager.isValidPassword()) {
                 messageLabel.setText("Invalid password");
             } else {
-                luConnectApp.getClient().sendLoginData(username, password);
+                luConnectApp.getClient().sendLoginData(username, password); // send login data
             }
         });
 
@@ -78,18 +78,18 @@ public class LoginScreen extends JPanel {
             }
         });
 
-        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        JPanel fieldsPanel = new JPanel(new GridBagLayout()); // panel to hold form fields
         fieldsPanel.setBackground(luConnectApp.SECOND_BACK_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0; gbc.gridy = 0;
-        JLabel username = new JLabel("Username: ");
+        JLabel username = new JLabel("Username: "); // label for username
         username.setForeground(luConnectApp.GREY);
         fieldsPanel.add(username, gbc);
         gbc.gridx = 1;
         fieldsPanel.add(usernameField, gbc);
         gbc.gridx = 0; gbc.gridy = 1;
-        JLabel password = new JLabel("Password: ");
+        JLabel password = new JLabel("Password: "); // label for password
         password.setForeground(luConnectApp.GREY);
         fieldsPanel.add(password, gbc);
         gbc.gridx = 1;
@@ -99,7 +99,7 @@ public class LoginScreen extends JPanel {
         gbc.gridx = 1; gbc.gridy = 3;
         fieldsPanel.add(send, gbc);
 
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // bottom panel for back button
         buttonsPanel.setBackground(luConnectApp.BACKGROUND_COLOR);
         buttonsPanel.add(back);
 

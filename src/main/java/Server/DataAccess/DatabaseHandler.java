@@ -19,9 +19,9 @@ import java.util.Objects;
 import static Common.Utils.Config.DB_PATH;
 
 public class DatabaseHandler implements IDatabaseHandler {
-    private static DatabaseHandler instance;
-    private static Connection conn;
-    private static SecurityModule securityModule;
+    private static DatabaseHandler instance; // singleton instance
+    private static Connection conn; // connection to SQLite database
+    private static SecurityModule securityModule; // decrypts stored passwords
 
     private DatabaseHandler() throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -30,7 +30,8 @@ public class DatabaseHandler implements IDatabaseHandler {
 
     public static synchronized DatabaseHandler getInstance() throws SQLException {
         if (Objects.isNull(instance)){
-        return new DatabaseHandler();}
+            return new DatabaseHandler();
+        }
         return instance;
     }
 
@@ -41,7 +42,6 @@ public class DatabaseHandler implements IDatabaseHandler {
         int columnsNumber = metaData.getColumnCount();
         HashSet<User> users = new HashSet<>();
         boolean isOnline = false;
-
 
         while (result.next()) {
             int i = 1;
@@ -63,8 +63,7 @@ public class DatabaseHandler implements IDatabaseHandler {
 
     @Override
     public void addUserData(User user) throws SQLException{
-        String sql = "INSERT OR IGNORE INTO users (username, password, is_online) " +
-                "VALUES (?,?,?);";
+        String sql = "INSERT OR IGNORE INTO users (username, password, is_online) VALUES (?,?,?);";
 
         try{
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -79,7 +78,6 @@ public class DatabaseHandler implements IDatabaseHandler {
 
     @Override
     public Message getNextPendMsg(User user, User sender) throws SQLException {
-
         int message_id = getNextMsgId(user, sender);
 
         String sql = "SELECT * FROM pending_messages WHERE message_id = ? ;";
@@ -92,7 +90,6 @@ public class DatabaseHandler implements IDatabaseHandler {
             }
 
             String userSql = "SELECT * FROM users WHERE user_id = ?";
-
             PreparedStatement receiverPreparedStatement = conn.prepareStatement(userSql);
             preparedStatement.setInt(1, result.getInt("receiver_id"));
             ResultSet userInfo = receiverPreparedStatement.executeQuery();
@@ -101,9 +98,7 @@ public class DatabaseHandler implements IDatabaseHandler {
             LocalDateTime timestamp = result.getTimestamp("timestamp").toLocalDateTime();
 
             if (result.getString("message_type").equals("TEXT")) {
-
                 return new TextMessage(sender, receiver, result.getString("content"), timestamp);
-
             } else if (result.getString("message_type").equals("FILE")) {
                 String filename = result.getString("filename");
                 byte[] b = result.getBytes("file_data");
@@ -124,14 +119,12 @@ public class DatabaseHandler implements IDatabaseHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
     public void appendPendMessage(Object msg) throws SQLException {
         if (msg instanceof TextMessage){
-            String sql = "INSERT INTO pending_messages (sender_id, receiver_id, message_type, file_data, filename, content, timestamp) " +
-                    "VALUES (?,?, 'TEXT', NULL, NULL, ?, ?);";
+            String sql = "INSERT INTO pending_messages (sender_id, receiver_id, message_type, file_data, filename, content, timestamp) VALUES (?,?, 'TEXT', NULL, NULL, ?, ?);";
             try {
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setInt(1, getUserid(((TextMessage) msg).getSender().getUsername()));
@@ -143,11 +136,8 @@ public class DatabaseHandler implements IDatabaseHandler {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-
         } else if (msg instanceof FileData) {
-            String sql = "INSERT INTO pending_messages (sender_id, receiver_id, message_type, content, file_data, filename, timestamp) " +
-                    "VALUES (?,?, 'FILE', NULL, ?, ?, ?);";
+            String sql = "INSERT INTO pending_messages (sender_id, receiver_id, message_type, content, file_data, filename, timestamp) VALUES (?,?, 'FILE', NULL, ?, ?, ?);";
             try {
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setInt(1, getUserid(((FileData) msg).getSender().getUsername()));
@@ -159,8 +149,7 @@ public class DatabaseHandler implements IDatabaseHandler {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }
-        else {
+        } else {
             throw new SQLException("Invalid message type");
         }
     }
@@ -176,7 +165,6 @@ public class DatabaseHandler implements IDatabaseHandler {
             if (!result.next()) {
                 return -1;
             }
-
             return result.getInt("message_id");
         } catch (SQLException e){
             e.printStackTrace();
@@ -197,15 +185,12 @@ public class DatabaseHandler implements IDatabaseHandler {
 
     @Override
     public void changeUserState(User user, boolean state) throws SQLException {
-
         try {
             String sql = "UPDATE users SET is_online = ? WHERE user_id = ?;";
-
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setBoolean(1, state);
             preparedStatement.setInt(2, getUserid(user.getUsername()));
             preparedStatement.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -213,7 +198,6 @@ public class DatabaseHandler implements IDatabaseHandler {
 
     private int getUserid(String username) throws SQLException {
         String sql = "SELECT user_id FROM users WHERE username = ?";
-
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, username);
@@ -228,10 +212,8 @@ public class DatabaseHandler implements IDatabaseHandler {
         }
     }
 
-    // Use when message is delivered to de receiver
-    public void popPendMsg(int msgId) throws SQLException {
+    public void popPendMsg(int msgId) throws SQLException { // delete message after delivery
         String sql = "DELETE FROM pending_messages WHERE message_id = ?";
-
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setInt(1, msgId);
@@ -241,10 +223,8 @@ public class DatabaseHandler implements IDatabaseHandler {
         }
     }
 
-    // By the moment, only used for testing
-    public void removeUser(String username) throws SQLException {
+    public void removeUser(String username) throws SQLException { // remove user by username (for testing)
         String sql = "DELETE FROM users WHERE username = ?";
-
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, username);
@@ -254,19 +234,7 @@ public class DatabaseHandler implements IDatabaseHandler {
         }
     }
 
-
-   /* public void removeHighestMsg () throws SQLException {
-        String sql = "DELETE FROM pending_messages WHERE message_id = (SELECT MAX(message_id) FROM pending_messages);";
-
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    } */
-
-    public void removeAllTestMsg(){
+    public void removeAllTestMsg(){ // remove test messages from testName sender
         String sql = "DELETE FROM pending_messages WHERE sender_id = (SELECT user_id FROM users WHERE username = ?)";
         PreparedStatement preparedStatement;
         try {
@@ -277,25 +245,8 @@ public class DatabaseHandler implements IDatabaseHandler {
             e.printStackTrace();
         }
     }
-    /*public void removeAll() throws SQLException {
-        String sql = "DELETE FROM pending_messages";
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        sql = "DELETE FROM users";
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }*/
 
-    // to close connection
-    public void close() throws SQLException {
+    public void close() throws SQLException { // close database connection
         conn.close();
     }
 

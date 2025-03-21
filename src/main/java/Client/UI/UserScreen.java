@@ -2,44 +2,40 @@ package Client.UI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.util.List;
-import javax.sound.sampled.*;
 
 public class UserScreen extends JPanel {
-    LU_Connect_App luConnect;
-    private JPanel userPanel;
-    private boolean notificationState;
+    LU_Connect_App luConnect; // reference to the main app
+    private JPanel userPanel; // panel that will contain user buttons
 
     public UserScreen(LU_Connect_App luConnectApp){
         luConnect = luConnectApp;
         setLayout(new BorderLayout());
         setBackground(luConnectApp.BACKGROUND_COLOR);
 
-        JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel title = new JLabel("Users Online", SwingConstants.CENTER);
+        JPanel topPanel = new JPanel(new BorderLayout()); // top bar
+        JLabel title = new JLabel("Users Online", SwingConstants.CENTER); // screen title
         title.setForeground(luConnectApp.GREY);
-
         title.setFont(new Font("Arial", Font.BOLD, 22));
-        JButton notifications = new JButton("Notications: " + luConnectApp.currentState());
+
+        JButton notifications = new JButton("Notications: " + luConnectApp.currentState()); // toggle notifications
         styleButton(notifications);
         notifications.addActionListener(e -> {
             luConnect.setNotificationState();
             notifications.setText("Notications: " + luConnectApp.currentState());
         });
 
-
         topPanel.setBackground(luConnectApp.BACKGROUND_COLOR);
         topPanel.add(title, BorderLayout.CENTER);
         topPanel.add(notifications, BorderLayout.EAST);
 
-        JButton logOut = new JButton("Log out");
+        JButton logOut = new JButton("Log out"); // logout button
         styleButton(logOut);
         logOut.addActionListener(e -> {
             luConnect.logOut();
         });
 
-        userPanel = new JPanel(new GridLayout(3, 1));
+        userPanel = new JPanel(new GridLayout(3, 1)); // panel that lists the users
         userPanel.setBackground(luConnectApp.SECOND_BACK_COLOR);
 
         add(topPanel, BorderLayout.NORTH);
@@ -47,7 +43,7 @@ public class UserScreen extends JPanel {
         add(logOut, BorderLayout.SOUTH);
     }
 
-    private void styleButton(JButton button) {
+    private void styleButton(JButton button) { // common button styling
         button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setBackground(luConnect.RED);
         button.setForeground(Color.WHITE);
@@ -55,7 +51,7 @@ public class UserScreen extends JPanel {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    private Icon createDotIcon(Color color) {
+    private Icon createDotIcon(Color color) { // small colored dot icon
         return new Icon() {
             private final int SIZE = 8;
             @Override public void paintIcon(Component c, Graphics g, int x, int y) {
@@ -69,14 +65,14 @@ public class UserScreen extends JPanel {
 
     public void updateUserList(List<String> onlineUsers, List<String> notifyUsers) {
         SwingUtilities.invokeLater(() -> {
-            userPanel.removeAll();
-            Icon dot = createDotIcon(luConnect.RED);
+            userPanel.removeAll(); // clear previous list
+            Icon dot = createDotIcon(luConnect.RED); // red dot icon for new messages
             for (String user : onlineUsers) {
-                JButton btn = new JButton(user);
+                JButton btn = new JButton(user); // create button with username
                 btn.setHorizontalTextPosition(SwingConstants.LEFT);
                 btn.setIconTextGap(8);
                 if (notifyUsers.contains(user) && luConnect.isNotificationState()) {
-                    btn.setIcon(dot);
+                    btn.setIcon(dot); // add dot if there's a new message
                 }
                 btn.addActionListener(e -> {
                     luConnect.setTargetClient(user);
@@ -86,10 +82,9 @@ public class UserScreen extends JPanel {
                 });
                 userPanel.add(btn);
             }
-            userPanel.revalidate();
+            userPanel.revalidate(); // refresh panel
             userPanel.repaint();
         });
     }
-
 
 }

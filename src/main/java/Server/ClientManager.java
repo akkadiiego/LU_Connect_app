@@ -42,23 +42,24 @@ public class ClientManager extends Thread {
     public void run() {
         System.out.println("Connected: " + Integer.parseInt(Thread.currentThread().getName().split("-")[3]));
 
+        // listen for commands from client
         while (in.hasNextLine()) {
             switch (in.nextLine()) {
                 case "END":
                     try {
-                        endClientConnection();
+                        endClientConnection(); // handle logout
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                     out.println("LOGGED OUT");
                     if (Server.getClients().isEmpty()){
-                        System.exit(0);
+                        System.exit(0); // shut down server if no clients
                     }
                     break;
 
                 case "REGISTER":
                     try {
-                        registerUser();
+                        registerUser(); // handle registration
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -69,7 +70,7 @@ public class ClientManager extends Thread {
                         break;
                     }
                     try {
-                        Login();
+                        Login(); // handle login
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -88,21 +89,15 @@ public class ClientManager extends Thread {
                     out.println("ONLINE CLIENTS:" + onClients);
                     break;
 
-
                 case "ENTER CHAT":
-
                     targetClient = null;
                     if (in.hasNextLine()) {
-
                         targetClient = Server.getClient(in.nextLine());
-                        //out.println(targetClient.user);
-                        //out.println("en el chat de:" + targetClient);
                         if (targetClient == null) {
                             out.println("USER NOT FOUND");
                             break;
                         }
-
-                        messageReceiver = getThread();
+                        messageReceiver = getThread(); // start checking for messages
                     }
                     break;
 
@@ -119,18 +114,16 @@ public class ClientManager extends Thread {
                         filename = in.nextLine();
                     }
                     if (in.hasNextLine()) {
-                        stringData = in.nextLine().replaceAll("[^A-Za-z0-9+/=]", "");
+                        stringData = in.nextLine().replaceAll("[^A-Za-z0-9+/=]", ""); // Source: https://stackoverflow.com/questions/8571501/how-to-check-whether-a-string-is-base64-encoded-or-not
                     }
                     byte [] data = Base64.getDecoder().decode(stringData);
                     if (!Objects.isNull(data) && !Objects.isNull(filename)) {
                         FileData newMessage = new FileData(user, targetClient.user, LocalDateTime.now(), filename, data.length, data);
-
                         try {
                             lock.lock();
                             databaseHandler = DatabaseHandler.getInstance();
-                            databaseHandler.appendPendMessage(newMessage);
+                            databaseHandler.appendPendMessage(newMessage); // save file to db
                             Server.getClient(targetClient.user.getUsername()).out.println("NOTIFY:" + user.getUsername());
-
                         } catch (SQLException e) {
                             e.printStackTrace();
                         } finally {
@@ -144,8 +137,7 @@ public class ClientManager extends Thread {
                     }
                     break;
 
-                case "POP":
-
+                case "POP": // remove received message from db
                     try {
                         lock.lock();
                         databaseHandler = DatabaseHandler.getInstance();
@@ -174,13 +166,12 @@ public class ClientManager extends Thread {
     private void sendMessage(String message) {
         TextMessage newMessage = null;
         if (!message.isEmpty()){
-
             newMessage = new TextMessage(user, targetClient.user, securityModule.cipherString(message), LocalDateTime.now());
         }
         try {
             lock.lock();
             databaseHandler = DatabaseHandler.getInstance();
-            databaseHandler.appendPendMessage(newMessage);
+            databaseHandler.appendPendMessage(newMessage); // save encrypted text message
             Server.getClient(targetClient.user.getUsername()).out.println("NOTIFY:" + user.getUsername());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -204,18 +195,14 @@ public class ClientManager extends Thread {
                     lock.lock();
                     databaseHandler = DatabaseHandler.getInstance();
 
-                    //out.println(targetClient.user);
                     Message message = databaseHandler.getNextPendMsg(user, targetClient.user);
                     if (message instanceof TextMessage) {
                         TextMessage newMessage = messageService.receiveMessage((TextMessage) message);
                         out.println("RECEIVED MESSAGE:" + (newMessage));
-
-
                     }
                     else if (message instanceof FileData) {
                         FileData newFile = (FileData) message;
                         out.println("RECEIVED FILE:" + newFile);
-
                     }
 
                 } catch (SQLException e) {
@@ -228,7 +215,7 @@ public class ClientManager extends Thread {
                     }
                     lock.unlock();
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1000); // wait before checking again
                     } catch (InterruptedException ignored) {
                     }
                 }
@@ -241,26 +228,18 @@ public class ClientManager extends Thread {
 
     private void registerUser() throws SQLException {
         ArrayList<String> arguments = new ArrayList<>();
-
-        if (in.hasNextLine()) {
-            arguments.add(in.nextLine());
-        }
-        if (in.hasNextLine()) {
-            arguments.add(in.nextLine());
-        }
+        if (in.hasNextLine()) arguments.add(in.nextLine());
+        if (in.hasNextLine()) arguments.add(in.nextLine());
 
         User newUser = new User(arguments.get(0), arguments.get(1), false);
-
         HashSet<User> users = null;
 
         try {
             lock.lock();
-
             databaseHandler = DatabaseHandler.getInstance();
             if (databaseHandler != null) {
                 users = databaseHandler.getUsersData();
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -273,51 +252,38 @@ public class ClientManager extends Thread {
 
         if (users == null || !authenticationService.authenticateNewUser(newUser, users)) {
             newUser.setPassword(securityModule.cipherString(newUser.getPassword()));
-
             try {
-
                 lock.lock();
                 databaseHandler = DatabaseHandler.getInstance();
                 if (databaseHandler != null) {
                     databaseHandler.addUserData(newUser);
                 }
-
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             } finally {
                 databaseHandler.close();
                 lock.unlock();
             }
-
             out.println("REGISTERED");
-
-        }
-        else {
+        } else {
             out.println("NOT REGISTERED");
         }
     }
 
     public void Login() throws SQLException {
         ArrayList<String> arguments = new ArrayList<>();
-
-        if (in.hasNextLine()) {
-            arguments.add(in.nextLine());
-        }
-        if (in.hasNextLine()) {
-            arguments.add(in.nextLine());
-        }
+        if (in.hasNextLine()) arguments.add(in.nextLine());
+        if (in.hasNextLine()) arguments.add(in.nextLine());
 
         User newUser = new User(arguments.get(0), arguments.get(1), false);
         HashSet<User> users = null;
 
         try {
             lock.lock();
-
             databaseHandler = DatabaseHandler.getInstance();
             if (databaseHandler != null) {
                 users = databaseHandler.getUsersData();
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -330,23 +296,18 @@ public class ClientManager extends Thread {
 
         if (users == null || !authenticationService.authenticateUser(newUser, users)) {
             out.println("NOT LOGGED");
-
-        }
-        else {
+        } else {
             try {
                 lock.lock();
                 databaseHandler = DatabaseHandler.getInstance();
                 if (databaseHandler.checkUserState(newUser)){
                     out.println("NOT LOGGED");
                 }else{
-                    databaseHandler.changeUserState( newUser, true);
+                    databaseHandler.changeUserState(newUser, true);
                     user = newUser;
                     user.setOnline(true);
-
                     Server.registerClient(user.getUsername(), this);
-
                 }
-
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             } finally {
@@ -354,7 +315,6 @@ public class ClientManager extends Thread {
                 lock.unlock();
             }
             out.println("LOGGED");
-
         }
     }
 
@@ -362,16 +322,14 @@ public class ClientManager extends Thread {
         return user;
     }
 
-
     private void endClientConnection() throws SQLException {
         if (user != null){
             user.setOnline(false);
-
             try {
                 lock.lock();
                 databaseHandler = DatabaseHandler.getInstance();
                 if (databaseHandler.checkUserState(user)){
-                    databaseHandler.changeUserState( user, false);
+                    databaseHandler.changeUserState(user, false);
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -382,6 +340,7 @@ public class ClientManager extends Thread {
         }
         closeConnection(clientSocket, in, out);
     }
+
     private void closeConnection(Socket clientSocket, Scanner in, PrintWriter out){
         try {
             clientSocket.close();

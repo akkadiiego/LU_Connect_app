@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class ChatScreen extends JPanel {
+    // UI components for chat interface
     private JPanel chatPanel;
     private JTextField messageField;
     private JButton sendButton;
@@ -24,6 +25,7 @@ public class ChatScreen extends JPanel {
         setLayout(new BorderLayout());
         setBackground(luConnectApp.BACKGROUND_COLOR);
 
+        // Top bar with title and buttons
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(luConnectApp.BACKGROUND_COLOR);
 
@@ -58,6 +60,7 @@ public class ChatScreen extends JPanel {
         topPanel.add(leftTop, BorderLayout.WEST);
         topPanel.add(rightTop, BorderLayout.EAST);
 
+        // Message display area
         chatBox = Box.createVerticalBox();
         chatPanel = new JPanel();
         chatPanel.setLayout(new BorderLayout());
@@ -68,7 +71,7 @@ public class ChatScreen extends JPanel {
         chatScrollPane.setBorder(null);
         chatScrollPane.getViewport().setBackground(luConnectApp.SECOND_BACK_COLOR);
 
-
+        // Bottom input area with message field and buttons
         JPanel floorPanel = new JPanel(new BorderLayout());
         floorPanel.setBackground(luConnectApp.BACKGROUND_COLOR);
 
@@ -85,9 +88,11 @@ public class ChatScreen extends JPanel {
         sendButton = new JButton("Send");
         styleButton(sendButton);
 
+        // Send message on click or Enter
         sendButton.addActionListener(e -> sendChatMessage());
         messageField.addActionListener(e -> sendChatMessage());
 
+        // Attach file button
         JButton attachButton = new JButton("SEND FILE");
         styleButton(attachButton);
         attachButton.addActionListener(e -> {
@@ -106,6 +111,7 @@ public class ChatScreen extends JPanel {
             }
         });
 
+        // Back button returns to user list and clears chat
         back.addActionListener(e -> {
             luConnectApp.showScreen("UserScreen");
             SwingUtilities.invokeLater(() -> luConnectApp.getClient().exitChat());
@@ -116,16 +122,17 @@ public class ChatScreen extends JPanel {
         floorPanel.add(sendButton, BorderLayout.EAST);
         floorPanel.add(attachButton, BorderLayout.WEST);
 
-
         add(topPanel, BorderLayout.NORTH);
         add(chatScrollPane, BorderLayout.CENTER);
         add(floorPanel, BorderLayout.SOUTH);
     }
 
+    // Change chat title when switching users
     public void updateChatTitle(String targetUser) {
         SwingUtilities.invokeLater(() -> title.setText("Chat with: " + targetUser));
     }
 
+    // Receive and show a message
     public void receiveMessage(String unformattedMessage) {
         if (unformattedMessage == null || unformattedMessage.trim().isEmpty()) {
             System.out.println("Received an empty message!");
@@ -141,6 +148,7 @@ public class ChatScreen extends JPanel {
         SwingUtilities.invokeLater(() -> addMessageBubble(formattedMessage, false));
     }
 
+    // Receive and show a file download button
     public void receiveFile(String filename, byte[] data){
         if (data == null || data.length == 0) {
             System.out.println("Received an empty file.");
@@ -149,6 +157,7 @@ public class ChatScreen extends JPanel {
         addDownloadMessage(filename, data);
     }
 
+    // Adds a button to download the received file
     private void addDownloadMessage(String filename, byte[] data){
         JPanel messagePanel = new JPanel(new BorderLayout());
         messagePanel.setBackground(luConnect.SECOND_BACK_COLOR);
@@ -187,7 +196,7 @@ public class ChatScreen extends JPanel {
         );
     }
 
-
+    // Display the message that you sent
     public void showSentMessage(String message) {
         if (message == null || message.trim().isEmpty()) {
             System.out.println("Empty message not displayed!");
@@ -197,6 +206,7 @@ public class ChatScreen extends JPanel {
         SwingUtilities.invokeLater(() -> addMessageBubble("You: " + message, true));
     }
 
+    // Handles sending messages from input field
     private void sendChatMessage() {
         String message = messageField.getText().trim();
         if (!message.isEmpty()) {
@@ -206,6 +216,7 @@ public class ChatScreen extends JPanel {
         }
     }
 
+    // Adds a chat bubble to the screen
     private void addMessageBubble(String message, boolean isSent) {
         JPanel messagePanel = new JPanel(new BorderLayout());
         messagePanel.setBackground(luConnect.SECOND_BACK_COLOR);
@@ -234,6 +245,7 @@ public class ChatScreen extends JPanel {
         SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
     }
 
+    // Applies styling to buttons
     private void styleButton(JButton button) {
         button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setBackground(luConnect.RED);
@@ -243,6 +255,7 @@ public class ChatScreen extends JPanel {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
+    // Clears all messages from the chat
     public void clearChat() {
         chatBox.removeAll();
         chatPanel.revalidate();

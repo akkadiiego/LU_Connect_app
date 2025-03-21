@@ -32,7 +32,7 @@ public class FileData extends Message implements Serializable{
 
     @Override
     public String toString() {
-        return getSender() + " -> " + filename  + " of " + fileSize + " bytes //// " + Base64.getEncoder().encodeToString(getData()).replaceAll("[^A-Za-z0-9+/=]", "");
+        return getSender() + " -> " + filename  + " of " + fileSize + " bytes //// " + Base64.getEncoder().encodeToString(getData()).replaceAll("[^A-Za-z0-9+/=]", "");  //https://stackoverflow.com/questions/8571501/how-to-check-whether-a-string-is-base64-encoded-or-not
     }
 
     @Override
