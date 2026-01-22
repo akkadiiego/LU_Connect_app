@@ -36,15 +36,13 @@ A real-time chat application built in Java using Swing for the user interface an
 ## Screenshots
 
 ### Login and Registration
-![Login screen](docs/screenshots/login.png)
+![Login screen](docs/screenshots/home.png)
 
-### Chat Interface
-![Chat interface](docs/screenshots/chat.png)
-
-### File Transfer
-![File transfer](docs/screenshots/file_transfer.png)
+### Chat Interface and file transfer
+![Chat interface](docs/screenshots/Chat_A.png)
+![File transfer](docs/screenshots/Chat_B.png)
 
 ### Online Users
-![Users online](docs/screenshots/users_online_1.png)
-![Users online](docs/screenshots/users_online_2.png)
+![Users online](docs/screenshots/Online_users_A.png)
+![Users online](docs/screenshots/Online_users_B.png)
 
