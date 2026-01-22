@@ -33,14 +33,3 @@ A real-time chat application built in Java using Swing for the user interface an
 
 `./gradlew run`
 
-## System Architecture
-
-![Component Diagram](SystemArchitecture.jpg)
-
-## System Interaction
-
-![Secuence Diagram Login](SequenceDiagram(LogIn).jpg)
-![Secuence Diagram Register](SequenceDiagram(registration).jpg)
-![Secuence Diagram Message](SequenceDiagram(Message).jpg)
-![Secuence Diagram File](SequenceDiagram(File).jpg)
-
