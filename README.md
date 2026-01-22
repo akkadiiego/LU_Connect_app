@@ -33,3 +33,18 @@ A real-time chat application built in Java using Swing for the user interface an
 
 `./gradlew run`
 
+## Screenshots
+
+### Login and Registration
+![Login screen](docs/screenshots/login.png)
+
+### Chat Interface
+![Chat interface](docs/screenshots/chat.png)
+
+### File Transfer
+![File transfer](docs/screenshots/file_transfer.png)
+
+### Online Users
+![Users online](docs/screenshots/users_online_1.png)
+![Users online](docs/screenshots/users_online_2.png)
+
