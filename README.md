@@ -12,7 +12,7 @@ A real-time chat application built in Java using Swing for the user interface an
 ## ** How to run it **
 ### 1. Git clone this repo
   `git clone https://github.com/akkadiiego/LU_Connect_app.git`
-  `cd LU-Connect`
+  `cd LU_Connect_app`
 ### 2. Open your shell
 
 #### Bash
