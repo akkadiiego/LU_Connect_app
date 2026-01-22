@@ -11,7 +11,7 @@ A real-time chat application built in Java using Swing for the user interface an
 
 ## ** How to run it **
 ### 1. Git clone this repo
-  `git clone https://github.com/yourusername/LU-Connect.git`
+  `git clone https://github.com/akkadiiego/LU_Connect_app.git`
   `cd LU-Connect`
 ### 2. Open your shell
 
